@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,188 +6,440 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVR Link — Seamless AV Receiver Control</title>
 <style>
-  :root {
-    --ink: #1b1f1d;
-    --paper: #f6f5f1;
-    --line: #d8d5cc;
-    --signal: #2f6f4f;
-    --signal-light: #e9f2ed;
-    --muted: #6b6f68;
-    --white: #ffffff;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    line-height: 1.65;
-  }
-  .wrap {
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 40px 24px 96px;
-  }
-  header.top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 20px;
-    margin-bottom: 64px;
-  }
-  .mark {
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    font-size: 18px;
-    color: var(--ink);
-    text-decoration: none;
-  }
-  .mark span { color: var(--signal); }
-  nav a {
-    font-size: 14px;
-    color: var(--muted);
-    text-decoration: none;
-    margin-left: 24px;
-    font-weight: 500;
-  }
-  nav a:hover, nav a.active { color: var(--ink); }
-  
-  .hero {
-    text-align: center;
-    margin-bottom: 80px;
-    padding: 20px 0;
-  }
-  h1 {
-    font-weight: 700;
-    font-size: 44px;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin: 0 0 16px;
-  }
-  .hero p {
-    font-size: 18px;
-    color: var(--muted);
-    max-width: 600px;
-    margin: 0 auto 32px;
-  }
-  .badge-container {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--signal);
-    margin-bottom: 24px;
-  }
-  .badge {
-    background: var(--signal-light);
-    padding: 4px 12px;
-    border-radius: 12px;
-  }
-  .cta-button {
-    display: inline-block;
-    background: var(--signal);
-    color: var(--white);
-    text-decoration: none;
-    padding: 14px 32px;
-    font-weight: 600;
-    font-size: 15px;
-    border-radius: 4px;
-    transition: background 0.2s ease;
-  }
-  .cta-button:hover { background: #23523a; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 
-  h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--signal);
-    margin: 64px 0 24px;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 8px;
+  :root{
+    --bg: #0b0d0c;
+    --panel: #141716;
+    --panel-line: #262a28;
+    --amber: #ff9d2e;
+    --amber-dim: #6b4a1e;
+    --text: #e8e6df;
+    --text-dim: #8b9089;
+    --green: #4fd67a;
   }
-  .grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
   }
-  .card {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 28px;
+
+  .display{font-family:'Space Mono',monospace;}
+
+  /* subtle brushed-metal texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events:none;
+    z-index:1;
   }
-  .card h3 {
-    font-size: 18px;
-    margin: 0 0 12px;
-    font-weight: 700;
+
+  nav{
+    position:sticky; top:0; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 6vw;
+    background:rgba(11,13,12,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--panel-line);
   }
-  .card p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.6;
+  .logo{
+    font-family:'Space Mono',monospace;
+    font-weight:700;
+    font-size:1rem;
+    letter-spacing:0.15em;
+    color:var(--amber);
   }
-  footer {
-    margin-top: 96px;
-    font-size: 13px;
-    color: var(--muted);
-    border-top: 1px solid var(--line);
-    padding-top: 24px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
+  .logo span{color:var(--text-dim);}
+  .navlinks{display:flex; gap:2.2rem; font-size:0.85rem; color:var(--text-dim);}
+  .navlinks a{color:var(--text-dim); text-decoration:none; transition:color .2s;}
+  .navlinks a:hover{color:var(--amber);}
+
+  main{position:relative; z-index:2;}
+
+  /* HERO */
+  .hero{
+    padding:9vh 6vw 8vh;
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:4rem;
+    align-items:center;
+    max-width:1300px;
+    margin:0 auto;
   }
-  footer a { color: var(--muted); text-decoration: none; }
-  footer a:hover { color: var(--ink); }
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:0.75rem;
+    letter-spacing:0.2em;
+    color:var(--green);
+    display:flex; align-items:center; gap:0.6rem;
+    margin-bottom:1.4rem;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 8px var(--green);
+    animation:pulse 2.4s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;} 50%{opacity:0.35;}
+  }
+  h1{
+    font-size:clamp(2.6rem, 5vw, 4.2rem);
+    line-height:1.05;
+    font-weight:600;
+    letter-spacing:-0.02em;
+    margin-bottom:1.4rem;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--amber);
+  }
+  .sub{
+    color:var(--text-dim);
+    font-size:1.1rem;
+    line-height:1.6;
+    max-width:46ch;
+    margin-bottom:2.2rem;
+  }
+  .cta-row{display:flex; gap:1rem; align-items:center; flex-wrap:wrap;}
+  .btn{
+    font-family:'Space Mono',monospace;
+    font-size:0.85rem;
+    padding:0.85rem 1.6rem;
+    border-radius:6px;
+    text-decoration:none;
+    letter-spacing:0.03em;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary{
+    background:var(--amber);
+    color:#1a1200;
+    font-weight:700;
+    box-shadow:0 0 0 rgba(255,157,46,0);
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 6px 24px rgba(255,157,46,0.25);}
+  .btn-ghost{
+    color:var(--text);
+    border:1px solid var(--panel-line);
+  }
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+  .platforms{
+    display:flex; gap:1.5rem; margin-top:2.6rem;
+    font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--text-dim);
+  }
+  .platforms span{color:var(--amber);}
+
+  /* SIGNATURE: receiver HUD knob */
+  .rig{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .receiver{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,214,150,0.10), transparent 55%),
+      linear-gradient(180deg,#3a342a,#221e18 40%, #17140f);
+    border:1px solid #4a4030;
+    border-radius:10px;
+    padding:2.4rem 2rem 2.2rem;
+    box-shadow:0 30px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,224,170,0.12);
+  }
+  .receiver::before{
+    content:"";
+    position:absolute; inset:0; border-radius:10px;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
+    pointer-events:none;
+  }
+  .sidelight{
+    position:absolute; top:14%; bottom:14%;
+    width:10px;
+    background:linear-gradient(180deg, transparent, rgba(255,178,90,0.55) 45%, rgba(255,178,90,0.55) 55%, transparent);
+    filter:blur(3px);
+    border-radius:6px;
+    animation:sidebreathe 4.5s ease-in-out infinite;
+  }
+  .sidelight.left{left:6px;}
+  .sidelight.right{right:6px;}
+  @keyframes sidebreathe{
+    0%,100%{opacity:0.55;} 50%{opacity:1;}
+  }
+  .brandrow{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Space Mono',monospace; font-size:0.65rem;
+    letter-spacing:0.18em; color:#a89577;
+    margin-bottom:1.6rem; position:relative; z-index:1;
+  }
+  .brandrow .dot{color:var(--amber);}
+  .porthole-wrap{
+    position:relative; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    padding:0.6rem 0 1.8rem;
+  }
+  .porthole{
+    width:190px; height:190px; border-radius:50%;
+    background:radial-gradient(circle at 38% 30%, #35322c, #0c0b09 72%);
+    border:6px solid #100e0b;
+    outline:1px solid #55483a;
+    position:relative;
+    box-shadow:0 14px 34px rgba(0,0,0,0.65), inset 0 0 26px rgba(0,0,0,0.75);
+  }
+  .porthole-ring{
+    position:absolute; inset:14px; border-radius:50%;
+    border:1px solid rgba(255,178,90,0.18);
+  }
+  .porthole-glass{
+    position:absolute; inset:22px; border-radius:50%;
+    background:radial-gradient(circle at 40% 32%, rgba(255,255,255,0.05), transparent 60%), #060505;
+    border:1px solid #2a251d;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .porthole-glass .txt{
+    font-family:'Space Mono',monospace; color:var(--amber);
+    text-shadow:0 0 10px rgba(255,157,46,0.55);
+  }
+  .porthole-glass .vol{font-size:1.5rem; letter-spacing:0.04em;}
+  .porthole-glass .src{font-size:0.62rem; color:#c9a877; letter-spacing:0.2em; margin-top:0.3rem;}
+  .knob-row{
+    display:flex; justify-content:space-between; align-items:center;
+    position:relative; z-index:1; padding:0 0.4rem;
+  }
+  .knob{
+    width:58px; height:58px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #4a4234, #17140f 70%);
+    border:1px solid #5a4d38;
+    position:relative;
+    box-shadow:0 6px 16px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.6);
+  }
+  .knob::after{
+    content:"";
+    position:absolute; top:6px; left:50%;
+    width:2px; height:12px; background:#d9a45a;
+    border-radius:2px; transform:translateX(-50%);
+  }
+  .knob.big{width:78px; height:78px; animation:knobturn 6s ease-in-out infinite;}
+  @keyframes knobturn{
+    0%,100%{transform:rotate(-25deg);}
+    50%{transform:rotate(25deg);}
+  }
+  .knob-label{
+    font-family:'Space Mono',monospace; font-size:0.55rem;
+    color:#8f7c5f; letter-spacing:0.12em; text-align:center; margin-top:0.5rem;
+  }
+
+  section{
+    padding:7vh 6vw;
+    max-width:1300px;
+    margin:0 auto;
+  }
+  .section-head{margin-bottom:3.2rem; max-width:60ch;}
+  .section-tag{
+    font-family:'Space Mono',monospace;
+    font-size:0.75rem; letter-spacing:0.2em;
+    color:var(--amber-dim); margin-bottom:0.8rem;
+  }
+  .section-head h2{
+    font-size:clamp(1.8rem,3vw,2.5rem);
+    font-weight:600; letter-spacing:-0.01em;
+  }
+
+  .grid3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--panel-line);
+    border:1px solid var(--panel-line);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .card{
+    background:var(--panel);
+    padding:2.4rem 2rem;
+    transition:background .25s ease;
+  }
+  .card:hover{background:#181b19;}
+  .card-icon{
+    width:42px; height:42px;
+    border:1px solid var(--panel-line);
+    border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:1.4rem;
+    color:var(--amber);
+  }
+  .card h3{
+    font-size:1.15rem; font-weight:600; margin-bottom:0.7rem;
+  }
+  .card p{
+    color:var(--text-dim); font-size:0.92rem; line-height:1.6;
+  }
+  .card .tag{
+    display:inline-block;
+    font-family:'Space Mono',monospace;
+    font-size:0.65rem;
+    color:var(--text-dim);
+    border:1px solid var(--panel-line);
+    padding:2px 8px;
+    border-radius:20px;
+    margin-bottom:1rem;
+  }
+
+  .strip{
+    display:flex; align-items:center; gap:2.5rem;
+    padding:2.6rem 6vw;
+    border-top:1px solid var(--panel-line);
+    border-bottom:1px solid var(--panel-line);
+    flex-wrap:wrap;
+    font-family:'Space Mono',monospace;
+    font-size:0.8rem;
+    color:var(--text-dim);
+    justify-content:center;
+  }
+  .strip b{color:var(--text);}
+
+  footer{
+    padding:4vh 6vw 6vh;
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--text-dim); font-size:0.85rem;
+    flex-wrap:wrap; gap:1rem;
+  }
+  footer a{color:var(--text-dim);}
+
+  @media (max-width:880px){
+    .hero{grid-template-columns:1fr; padding-top:5vh;}
+    .grid3{grid-template-columns:1fr;}
+    .rig{margin-top:2rem;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .knob, .eyebrow::before{animation:none;}
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <a class="mark" href="index.html">AVR<span>·</span>Link</a>
-      <nav>
-        <a href="index.html" class="active">Overview</a>
-        <a href="support.html">Support</a>
-        <a href="privacy.html">Privacy</a>
-      </nav>
-    </header>
 
-    <section class="hero">
-      <div class="badge-container">
-        <span class="badge">macOS</span>
-        <span class="badge">iOS</span>
-        <span class="badge">watchOS</span>
-      </div>
-      <h1>Control your AV receiver, seamlessly.</h1>
-      <p>AVR Link is a lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
-      <a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener" class="cta-button">View Github</a>
-    </section>
+<nav>
+  <div class="logo">AVR<span>·</span>LINK</div>
+  <div class="navlinks">
+    <a href="#ecosystem">Ecosystem</a>
+    <a href="#support">Support</a>
+    <a href="https://github.com/rawporkchop/AVR-Link">GitHub</a>
+  </div>
+</nav>
 
-    <h2>Ecosystem Architecture</h2>
-    <div class="grid-3">
-      <div class="card">
-        <h3>macOS Menu Bar</h3>
-        <p>A compact desktop utility resting in your status bar. Mix volume fluidly using an AppKit-powered scrub HUD with integrated desktop blurs.</p>
+<main>
+  <div class="hero">
+    <div>
+      <div class="eyebrow">LOCAL · NO CLOUD · APPLE-NATIVE</div>
+      <h1>Control your AV receiver, <em>seamlessly.</em></h1>
+      <p class="sub">A lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/rawporkchop/AVR-Link">View on GitHub</a>
+        <a class="btn btn-ghost" href="#ecosystem">See the ecosystem</a>
       </div>
-      <div class="card">
-        <h3>iOS Companion</h3>
-        <p>Complete remote parity with Home Screen widgets, Lock Screen status indicators, Control Center items, and native hardware button integration.</p>
-      </div>
-      <div class="card">
-        <h3>watchOS Remote</h3>
-        <p>A sleek wrist controller leveraging the Digital Crown for volume adjustments while mirroring status via direct iPhone background relays.</p>
+      <div class="platforms">
+        <div><span>◆</span> macOS Menu Bar</div>
+        <div><span>◆</span> iOS Companion</div>
+        <div><span>◆</span> watchOS Remote</div>
       </div>
     </div>
 
-    <footer>
-      <span>AVR Link — Core Suite</span>
-      <span>Oliver Larsson</span>
-    </footer>
+    <div class="rig">
+      <div class="receiver">
+        <div class="sidelight left"></div>
+        <div class="sidelight right"></div>
+        <div class="brandrow">
+          <span>AVR·LINK</span>
+          <span class="dot">●</span>
+          <span>ZONE MAIN</span>
+        </div>
+        <div class="porthole-wrap">
+          <div class="porthole">
+            <div class="porthole-ring"></div>
+            <div class="porthole-glass">
+              <div class="txt vol">−32.5dB</div>
+              <div class="txt src">APPLE TV</div>
+            </div>
+          </div>
+        </div>
+        <div class="knob-row">
+          <div>
+            <div class="knob"></div>
+            <div class="knob-label">SOURCE</div>
+          </div>
+          <div>
+            <div class="knob big"></div>
+            <div class="knob-label">VOLUME</div>
+          </div>
+          <div>
+            <div class="knob"></div>
+            <div class="knob-label">ZONE</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <section id="ecosystem">
+    <div class="section-head">
+      <div class="section-tag">ECOSYSTEM ARCHITECTURE</div>
+      <h2>One receiver. Three ways to reach it.</h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <span class="tag">macOS</span>
+        <div class="card-icon">⌘</div>
+        <h3>Menu Bar</h3>
+        <p>A compact desktop utility resting in your status bar. Mix volume fluidly using an AppKit-powered scrub HUD with integrated desktop blurs.</p>
+      </div>
+      <div class="card">
+        <span class="tag">iOS</span>
+        <div class="card-icon">◱</div>
+        <h3>Companion</h3>
+        <p>Complete remote parity with Home Screen widgets, Lock Screen status indicators, Control Center items, and native hardware button integration.</p>
+      </div>
+      <div class="card">
+        <span class="tag">watchOS</span>
+        <div class="card-icon">◐</div>
+        <h3>Remote</h3>
+        <p>A sleek wrist controller leveraging the Digital Crown for volume adjustments, mirroring status via direct iPhone background relays.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div><b>Zero</b> cloud dependency</div>
+    <div><b>Native</b> AppKit + SwiftUI</div>
+    <div><b>Open</b> source on GitHub</div>
+    <div><b>Local</b> network control only</div>
+  </div>
+
+  <section id="support">
+    <div class="section-head">
+      <div class="section-tag">GET STARTED</div>
+      <h2>Built by one person. Runs on all your Apple devices.</h2>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/rawporkchop/AVR-Link">View Github</a>
+      <a class="btn btn-ghost" href="https://oliverkl.com/avrlink/support.html">Support</a>
+      <a class="btn btn-ghost" href="https://oliverkl.com/avrlink/privacy.html">Privacy</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>AVR Link — Core Suite</div>
+  <div>By <a href="https://oliverkl.com">Oliver Larsson</a></div>
+</footer>
+
 </body>
 </html>
+
