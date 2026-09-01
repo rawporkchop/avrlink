@@ -58,16 +58,16 @@ body{
 #appicon-btn:hover, #appicon-btn.active{ background:rgba(255,255,255,0.22); }
 #appicon-btn.scrubbing{ background:rgba(255,255,255,0.22); }
 #appicon-btn .sfsym{ vertical-align:0; display:block; }
-#appicon-btn .app-icon-image{ width:18px; height:18px; display:block; object-fit:contain; border-radius:4px; }
+#appicon-btn .app-icon-image{ width:18px; height:18px; display:block; object-fit:contain; border-radius:4px; -webkit-user-drag:none; user-drag:none; user-select:none; -webkit-user-select:none; pointer-events:none; }
 
 /* ---------- menu-bar volume Scrub HUD ---------- */
-#scrub-hud{position:absolute;top:calc(var(--menubar-h) + 6px);left:0;width:300px;height:48px;z-index:80;display:flex;align-items:center;padding:0 16px;gap:12px;border:1px solid rgba(0,0,0,.48);border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.22);color:#fff;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-5px) scale(.985);transform-origin:top center;transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}
+#scrub-hud{position:absolute;top:calc(var(--menubar-h) + 6px);left:0;width:210px;height:34px;z-index:80;display:flex;align-items:center;padding:0 11px;gap:8px;border:1px solid rgba(0,0,0,.48);border-radius:11px;overflow:hidden;box-shadow:0 8px 21px rgba(0,0,0,.28),0 1.5px 5.5px rgba(0,0,0,.22);color:#fff;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-5px) scale(.985);transform-origin:top center;transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}
 #scrub-hud::before{content:"";position:absolute;inset:0;border-radius:inherit;background:rgba(35,35,35,.60);backdrop-filter:blur(38px) saturate(1.6);-webkit-backdrop-filter:blur(38px) saturate(1.6)}
 #scrub-hud.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1);transition:opacity .12s ease,transform .12s ease}
-#scrub-hud .scrub-track{position:relative;z-index:1;flex:1 1 auto;height:5px;min-width:0;border-radius:999px;background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
+#scrub-hud .scrub-track{position:relative;z-index:1;flex:1 1 auto;height:4px;min-width:0;border-radius:999px;background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
 #scrub-hud .scrub-fill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:inherit;background:#34C759}
-#scrub-hud .scrub-thumb{position:absolute;top:50%;left:0;width:25px;height:25px;margin:-12.5px 0 0 -12.5px;border-radius:50%;background:#f5f5f5;box-shadow:0 1px 3px rgba(0,0,0,.24)}
-#scrub-hud .scrub-value{position:relative;z-index:1;flex:0 0 78px;width:78px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:clip;font:600 22px/1 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Helvetica Neue",Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.2px;color:#fff}
+#scrub-hud .scrub-thumb{position:absolute;top:50%;left:0;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#f5f5f5;box-shadow:0 1px 3px rgba(0,0,0,.24)}
+#scrub-hud .scrub-value{position:relative;z-index:1;flex:0 0 55px;width:55px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:clip;font:600 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Helvetica Neue",Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.2px;color:#fff}
 @media (prefers-color-scheme:light){#scrub-hud::before{background:rgba(235,235,240,.60)}#scrub-hud{color:#111;border-color:rgba(0,0,0,.34)}#scrub-hud .scrub-value{color:#111}#scrub-hud .scrub-track{background:rgba(0,0,0,.14)}#scrub-hud .scrub-thumb{background:#fff}}
 
 #hint{
@@ -617,7 +617,7 @@ function fmtVol(v){
     const s = db > 0 ? `+${db.toFixed(1)}` : db.toFixed(1);
     return s;
   }
-  return `${Math.round(v)}`;
+  return Number(v).toFixed(1);
 }
 function axisLabel(v){
   if (S.volumeScale === 'relative') return `${(v-80)>=0?'+':''}${Math.round(v-80)}`;
@@ -764,12 +764,12 @@ function renderZoneCard(z){
         ${showMediaBtn ? `<button class="icon-btn side-btn right ${drawerOpen?'on':''}" data-action="toggle-media" data-zone="${z.id}" ${mediaBtnEnabled?'':'disabled'} title="Media controls">${I('music',15)}</button>` : ''}
       </div>
       <div class="slider-row">
-        <button class="step-btn" data-action="volume-step" data-zone="${z.id}" data-delta="-2">−</button>
+        <button class="step-btn" data-action="volume-step" data-zone="${z.id}" data-delta="${z.id==='main'?-0.5:-1}">−</button>
         <div class="slider-col">
-          <input type="range" class="range volume-slider" data-zone="${z.id}" min="0" max="${max}" step="1" value="${vol}">
+          <input type="range" class="range volume-slider" data-zone="${z.id}" min="0" max="${max}" step="${z.id==='main'?0.5:1}" value="${vol}">
           ${limitOn ? `<div class="limit-labels"><span>${axisLabel(0)}</span><span>${axisLabel(max)}</span></div>` : ''}
         </div>
-        <button class="step-btn" data-action="volume-step" data-zone="${z.id}" data-delta="2">+</button>
+        <button class="step-btn" data-action="volume-step" data-zone="${z.id}" data-delta="${z.id==='main'?0.5:1}">+</button>
       </div>
     </div>
     <div class="drawer ${drawerOpen?'open':''}">
@@ -1177,26 +1177,116 @@ function toggleAppPopover(e){
     }, 180);
   }
 }
-/* menu-bar long-press + drag volume scrubber */
+/* menu-bar click vs drag volume scrubber
+   A plain press/release opens the main menu; as soon as the pointer moves,
+   the gesture becomes a scrub and the HUD takes over. */
 (function(){
   const button=document.getElementById('appicon-btn'),hud=document.getElementById('scrub-hud'),desktop=document.getElementById('desktop');
   if(!button||!hud||!desktop)return;
-  const HOLD_MS=320, TRAVEL=180; let holdTimer=null,pointerId=null,startX=0,startVolume=0,scrubMax=98,scrubbing=false,suppressClick=false;
+  const TRAVEL=180, DRAG_THRESHOLD=4;
+  let pointerId=null,startX=0,startY=0,startVolume=0,scrubMax=98,scrubbing=false,suppressClick=false;
+
   function mainZone(){return S.zones.find(z=>z.id==='main')||S.zones[0]}
   function refreshBounds(){const z=mainZone();scrubMax=Math.max(volMax(z?z.id:'main'),1);return z}
-  function formatValue(v){if(S.volumeScale==='relative'){const db=v-80;return `${db>0?'+':''}${Number(db.toFixed(1))}`}return Number.isInteger(v)?String(v):v.toFixed(1)}
-  function updateHUD(){const z=mainZone();if(!z)return;const max=Math.max(volMax(z.id),1),v=Math.min(Math.max(z.volume,0),max),r=v/max;hud.querySelector('.scrub-fill').style.width=`${r*100}%`;hud.querySelector('.scrub-thumb').style.left=`${r*100}%`;hud.querySelector('.scrub-value').textContent=formatValue(v)}
-  function positionHUD(){const b=button.getBoundingClientRect(),d=desktop.getBoundingClientRect(),w=hud.offsetWidth||300;let x=b.left+b.width/2-w/2-d.left;x=Math.max(6,Math.min(x,d.width-w-6));hud.style.left=`${Math.round(x)}px`}
-  function showHUD(){refreshBounds();updateHUD();positionHUD();hud.classList.add('visible');hud.setAttribute('aria-hidden','false')}
-  function hideHUD(){hud.classList.remove('visible');hud.setAttribute('aria-hidden','true')}
-  function cancelHold(){if(holdTimer){clearTimeout(holdTimer);holdTimer=null}}
-  function beginScrub(){holdTimer=null;if(pointerId===null)return;const z=refreshBounds();if(!z)return;scrubbing=true;suppressClick=true;startVolume=Math.min(Math.max(z.volume,0),scrubMax);showHUD();button.classList.add('scrubbing')}
-  function setVolume(clientX){const z=mainZone();if(!z)return;z.volume=Math.min(Math.max(startVolume+(clientX-startX)/TRAVEL*scrubMax,0),scrubMax);updateHUD();const card=document.querySelector('.zone-card');if(card){const slider=card.querySelector('.volume-slider[data-zone="'+z.id+'"]'),num=card.querySelector('.volume-num');if(slider)slider.value=z.volume;if(num)num.textContent=fmtVol(z.volume)}}
-  button.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;cancelHold();pointerId=e.pointerId;startX=e.clientX;scrubbing=false;suppressClick=false;try{button.setPointerCapture(pointerId)}catch(err){}holdTimer=setTimeout(beginScrub,HOLD_MS)})
-  button.addEventListener('pointermove',e=>{if(pointerId!==e.pointerId||!scrubbing)return;e.preventDefault();setVolume(e.clientX)})
-  function endPointer(e){if(pointerId!==e.pointerId)return;cancelHold();const was=scrubbing;scrubbing=false;pointerId=null;if(was){hideHUD();button.classList.remove('scrubbing');render();suppressClick=true}try{button.releasePointerCapture(e.pointerId)}catch(err){}}
-  button.addEventListener('pointerup',endPointer);button.addEventListener('pointercancel',endPointer)
-  button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopImmediatePropagation();suppressClick=false}},true)
+  function formatValue(v){
+    if(S.volumeScale==='relative'){
+      const db=v-80;
+      return `${db>0?'+':''}${Number(db.toFixed(1))}`
+    }
+    return Number.isInteger(v)?String(v):v.toFixed(1)
+  }
+  function updateHUD(){
+    const z=mainZone();if(!z)return;
+    const max=Math.max(volMax(z.id),1),v=Math.min(Math.max(z.volume,0),max),r=v/max;
+    hud.querySelector('.scrub-fill').style.width=`${r*100}%`;
+    hud.querySelector('.scrub-thumb').style.left=`${r*100}%`;
+    hud.querySelector('.scrub-value').textContent=formatValue(v)
+  }
+  function positionHUD(){
+    const b=button.getBoundingClientRect(),d=desktop.getBoundingClientRect(),w=hud.offsetWidth||300;
+    let x=b.left+b.width/2-w/2-d.left;
+    x=Math.max(6,Math.min(x,d.width-w-6));
+    hud.style.left=`${Math.round(x)}px`
+  }
+  function showHUD(){
+    refreshBounds();updateHUD();positionHUD();
+    hud.classList.add('visible');hud.setAttribute('aria-hidden','false')
+  }
+  function hideHUD(){
+    hud.classList.remove('visible');hud.setAttribute('aria-hidden','true')
+  }
+  function beginScrub(){
+    if(pointerId===null)return;
+    const z=refreshBounds();if(!z)return;
+    scrubbing=true;suppressClick=true;
+    startVolume=Math.min(Math.max(z.volume,0),scrubMax);
+    showHUD();button.classList.add('scrubbing')
+  }
+  function setVolume(clientX){
+    const z=mainZone();if(!z)return;
+    z.volume=Math.min(Math.max(startVolume+(clientX-startX)/TRAVEL*scrubMax,0),scrubMax);
+    updateHUD();
+    const card=document.querySelector('.zone-card');
+    if(card){
+      const slider=card.querySelector('.volume-slider[data-zone="'+z.id+'"]'),num=card.querySelector('.volume-num');
+      if(slider)slider.value=z.volume;
+      if(num)num.textContent=fmtVol(z.volume)
+    }
+  }
+
+  // Prevent the browser's native HTML5 image-drag behavior. Without this,
+  // dragging the icon can create a visual drag-ghost that looks like the
+  // menubar receiver icon itself is being rearranged.
+  button.addEventListener('dragstart',e=>{ e.preventDefault(); }, true);
+
+  button.addEventListener('pointerdown',e=>{
+    if(e.button!==undefined&&e.button!==0)return;
+    pointerId=e.pointerId;
+    startX=e.clientX;
+    startY=e.clientY;
+    scrubbing=false;
+    suppressClick=false;
+    try{button.setPointerCapture(pointerId)}catch(err){}
+  });
+
+  button.addEventListener('pointermove',e=>{
+    if(pointerId!==e.pointerId)return;
+    if(!scrubbing){
+      const dx=e.clientX-startX;
+      const dy=e.clientY-startY;
+      if(Math.hypot(dx,dy)>DRAG_THRESHOLD)beginScrub();
+    }
+    if(scrubbing){
+      e.preventDefault();
+      setVolume(e.clientX);
+    }
+  });
+
+  function endPointer(e){
+    if(pointerId!==e.pointerId)return;
+    const was=scrubbing;
+    scrubbing=false;
+    pointerId=null;
+    if(was){
+      hideHUD();
+      button.classList.remove('scrubbing');
+      render();
+      suppressClick=true;
+    }
+    try{button.releasePointerCapture(e.pointerId)}catch(err){}
+  }
+
+  button.addEventListener('pointerup',endPointer);
+  button.addEventListener('pointercancel',endPointer);
+
+  button.addEventListener('click',e=>{
+    if(suppressClick){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      suppressClick=false;
+    }
+  },true);
+
   window.addEventListener('resize',()=>{if(scrubbing)positionHUD()})
 })();
 
