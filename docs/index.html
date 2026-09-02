@@ -35,6 +35,7 @@
     --font-mono: 'JetBrains Mono', monospace;
 
     --radius-card: 16px;
+    --nav-height: 70px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -66,10 +67,8 @@
     inset: 0;
     background: 
       radial-gradient(ellipse 80% 50% at 50% -10%, rgba(2, 132, 199, 0.28), transparent 70%),
-      radial-gradient(ellipse 70% 40% at 50% 110%, rgba(217, 119, 36, 0.2), transparent 70%),
-      linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      radial-gradient(ellipse 70% 40% at 50% 110%, rgba(217, 119, 36, 0.2), transparent 70%);
+    background-size: 100% 100%, 100% 100%;
     pointer-events: none;
     z-index: 0;
   }
@@ -79,10 +78,11 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    height: var(--nav-height);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 4vw;
+    padding: 0 4vw;
     background: rgba(6, 11, 17, 0.85);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-subtle);
@@ -137,39 +137,27 @@
     margin: 0 auto;
   }
 
-  /* Hero Section */
+  /* Full-Viewport Hero Section */
   .hero-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 7rem 4vw 3rem;
-  }
-
-  .eyebrow-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.9rem;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 2px;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--icon-blue-bright);
-    letter-spacing: 0.14em;
-    margin-bottom: 2rem;
+    min-height: calc(100vh - var(--nav-height));
+    min-height: calc(100dvh - var(--nav-height));
+    padding: 2rem 4vw;
   }
 
   h1 {
     font-family: var(--font-display);
-    font-size: clamp(2.8rem, 5vw, 4.8rem);
+    font-size: clamp(2.5rem, 6.5vw, 5.2rem);
     font-weight: 800;
-    line-height: 1.05;
+    line-height: 1.08;
     letter-spacing: -0.03em;
-    margin-bottom: 1.8rem;
+    margin-bottom: 1.5rem;
     text-transform: uppercase;
   }
 
@@ -181,10 +169,10 @@
   }
 
   .hero-sub {
-    font-size: 1.18rem;
-    line-height: 1.65;
+    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    line-height: 1.6;
     color: var(--text-muted);
-    max-width: 62ch;
+    max-width: 60ch;
     margin-bottom: 2.5rem;
   }
 
@@ -198,7 +186,7 @@
 
   .btn {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: clamp(0.75rem, 1.2vw, 0.85rem);
     font-weight: 600;
     padding: 1rem 2rem;
     text-decoration: none;
@@ -238,9 +226,9 @@
   .platforms-strip {
     display: flex;
     gap: 1.8rem;
-    margin-top: 3rem;
+    margin-top: 3.5rem;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1vw, 0.8rem);
     color: var(--text-muted);
   }
 
@@ -250,7 +238,7 @@
 
   /* Embedded Simulator Section */
   .simulator-wrapper {
-    padding: 1rem 4vw 6rem;
+    padding: 2rem 4vw 6rem;
   }
 
   .simulator-frame-container {
@@ -408,44 +396,6 @@
     line-height: 1.65;
   }
 
-  /* Architectural Data Strip */
-  .data-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--border-subtle);
-    border-bottom: 1px solid var(--border-subtle);
-    margin: 4rem 0;
-  }
-
-  .data-cell {
-    padding: 2.5rem 2vw;
-    border-right: 1px solid var(--border-subtle);
-    font-family: var(--font-mono);
-  }
-
-  .data-cell:last-child {
-    border-right: none;
-  }
-
-  .data-cell-title {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-
-  .data-cell-val {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .data-cell-val b {
-    color: var(--icon-copper-bright);
-    font-weight: inherit;
-  }
-
   /* Support Banner */
   .support-section {
     padding: 6rem 4vw;
@@ -501,17 +451,13 @@
 
   @media (max-width: 1024px) {
     .ecosystem-grid { grid-template-columns: 1fr; }
-    .data-strip { grid-template-columns: repeat(2, 1fr); }
-    .data-cell { border-bottom: 1px solid var(--border-subtle); }
-    .data-cell:nth-child(2) { border-right: none; }
     .simulator-iframe { height: 60vh; min-height: 450px; }
   }
 
   @media (max-width: 640px) {
-    .data-strip { grid-template-columns: 1fr; }
-    .data-cell { border-right: none; }
     .support-section { flex-direction: column; align-items: flex-start; }
-    .platforms-strip { flex-direction: column; gap: 0.6rem; }
+    .platforms-strip { flex-direction: column; gap: 0.6rem; margin-top: 2rem; }
+    .hero-container { min-height: calc(100dvh - var(--nav-height)); padding: 1.5rem 4vw; }
   }
 </style>
 </head>
@@ -533,9 +479,6 @@
 
 <main>
   <section class="hero-container reveal-1">
-    <div class="eyebrow-badge">
-      <span>LOCAL</span> :: <span>NO CLOUD</span> :: <span>APPLE-NATIVE</span>
-    </div>
     <h1>Control your AV receiver, <em>seamlessly.</em></h1>
     <p class="hero-sub">A lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
     <div class="cta-group">
@@ -604,25 +547,6 @@
       </div>
     </div>
   </section>
-
-  <div class="data-strip">
-    <div class="data-cell">
-      <div class="data-cell-title">CLOUD TRACKING</div>
-      <div class="data-cell-val"><b>Zero</b> cloud dependency</div>
-    </div>
-    <div class="data-cell">
-      <div class="data-cell-title">ENGINE</div>
-      <div class="data-cell-val"><b>Native</b> AppKit + SwiftUI</div>
-    </div>
-    <div class="data-cell">
-      <div class="data-cell-title">SOURCE CODE</div>
-      <div class="data-cell-val"><b>Open</b> source on GitHub</div>
-    </div>
-    <div class="data-cell">
-      <div class="data-cell-title">SECURITY</div>
-      <div class="data-cell-val"><b>Local</b> network control only</div>
-    </div>
-  </div>
 
   <section class="support-section" id="support">
     <div class="support-text">
