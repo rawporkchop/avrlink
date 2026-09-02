@@ -296,6 +296,14 @@
     display: block;
   }
 
+  .appstore-video {
+    width: 100%;
+    max-height: 600px;
+    object-fit: contain;
+    background: var(--bg-base);
+    display: block;
+  }
+
   .simulator-footer-bar {
     background: var(--bg-surface);
     padding: 0.85rem 1.5rem;
@@ -315,6 +323,18 @@
 
   .simulator-footer-bar a:hover {
     text-decoration: underline;
+  }
+
+  /* MEDIA SECTION */
+  .media-section {
+    padding: 6rem 4vw;
+    border-top: 1px solid var(--border-subtle);
+    background: linear-gradient(180deg, rgba(12, 21, 32, 0.4) 0%, rgba(6, 11, 17, 0.9) 100%);
+  }
+
+  .media-container {
+    max-width: 1000px;
+    margin: 0 auto;
   }
 
   /* Ecosystem Section */
@@ -484,11 +504,6 @@
     gap: 1rem;
   }
 
-  .footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
   footer a {
     color: var(--text-primary);
     text-decoration: none;
@@ -524,9 +539,9 @@
   </a>
   <ul class="nav-links">
     <li><a href="#simulator">Simulator</a></li>
+    <li><a href="#preview">Preview</a></li>
     <li><a href="#ecosystem">Ecosystem</a></li>
     <li><a href="#support">Support</a></li>
-    <li><a href="privacy.html">Privacy</a></li>
     <li><a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a></li>
   </ul>
 </nav>
@@ -565,6 +580,27 @@
       <div class="simulator-footer-bar">
         <span>DIRECT PREVIEW MODE</span>
         <a href="web_preview.html" target="_blank" rel="noopener">↗ Open Simulator Fullscreen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="media-section" id="preview">
+    <div class="media-container">
+      <div class="simulator-frame-container">
+        <div class="simulator-header-bar">
+          <div class="simulator-status">
+            <div class="status-indicator">
+              <div class="signal-dot"></div>
+              <span>APP STORE PREVIEW</span>
+            </div>
+            <span>appstore1.mp4</span>
+          </div>
+          <div style="color: var(--text-dim); letter-spacing: 0.1em;">VIDEO PREVIEW</div>
+        </div>
+        <video class="appstore-video" autoplay loop muted playsinline controls>
+          <source src="appstore1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   </section>
@@ -627,7 +663,7 @@
   <section class="support-section" id="support">
     <div class="support-text">
       <h2>Built by one person. Runs on all your Apple devices.</h2>
-      <p>Explore the repository, view documentation, or check our <a href="privacy.html" style="color: var(--icon-blue-bright); text-decoration: underline;">privacy policy</a>.</p>
+      <p>Explore the repository, view documentation, or check our privacy policy.</p>
     </div>
     <div class="cta-group">
       <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
@@ -637,8 +673,7 @@
 
 <footer>
   <div>&copy; AVR Link. All rights reserved.</div>
-  <div class="footer-links">
-    <a href="privacy.html">Privacy Policy</a>
+  <div>
     <a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a>
   </div>
 </footer>
