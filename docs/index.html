@@ -11,10 +11,12 @@
 <style>
   :root {
     --bg-base: #060b11;
-    --bg-surface: #0c1520;
-    --bg-surface-elevated: #132030;
-    --border-subtle: #1a2b3c;
-    --border-strong: #2a415a;
+    
+    /* Updated card surface tones to translucent deep twilight slate with backdrop blur */
+    --bg-surface: rgba(13, 20, 33, 0.75);
+    --bg-surface-elevated: rgba(21, 31, 50, 0.85);
+    --border-subtle: rgba(42, 65, 90, 0.4);
+    --border-strong: rgba(56, 189, 248, 0.25);
     
     --icon-blue: #0284c7;
     --icon-blue-bright: #38bdf8;
@@ -65,10 +67,8 @@
     content: "";
     position: fixed;
     inset: 0;
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(2, 132, 199, 0.28), transparent 70%),
-      radial-gradient(ellipse 70% 40% at 50% 110%, rgba(217, 119, 36, 0.2), transparent 70%);
-    background-size: 100% 100%, 100% 100%;
+    background: linear-gradient(135deg, var(--icon-blue-bright) 0%, var(--icon-copper-bright) 100%);
+    opacity: 0.15;
     pointer-events: none;
     z-index: 0;
   }
@@ -243,6 +243,8 @@
 
   .simulator-frame-container {
     background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-strong);
     border-radius: 8px;
     overflow: hidden;
@@ -358,6 +360,8 @@
     border-radius: 8px;
     overflow: hidden;
     background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(56, 189, 248, 0.1);
   }
 
@@ -402,6 +406,8 @@
 
   .ecosystem-card {
     background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
     padding: 2.5rem;
     border-radius: 4px;
@@ -409,11 +415,12 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: border-color 0.3s ease, transform 0.3s ease;
+    transition: border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
   }
 
   .ecosystem-card:hover {
     border-color: var(--border-strong);
+    background: var(--bg-surface-elevated);
     transform: translateY(-3px);
   }
 
@@ -463,6 +470,8 @@
   .support-section {
     padding: 6rem 4vw;
     background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
