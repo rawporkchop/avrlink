@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -305,6 +306,82 @@
     text-decoration: underline;
   }
 
+  /* Feature Video Showcase Section */
+.feature-showcase-section {
+  padding: 6rem 13.2vw;
+  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+  .feature-text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .feature-caption {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .feature-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .feature-bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    color: var(--text-primary);
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  .feature-bullets li::before {
+    content: "◆";
+    color: var(--icon-blue-bright);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .feature-media-container {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 3 / 4;
+    justify-self: end;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-surface);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(56, 189, 248, 0.1);
+  }
+
+  .feature-media-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
   /* Ecosystem Section */
   .ecosystem-section {
     padding: 6rem 4vw;
@@ -450,6 +527,13 @@
   }
 
   @media (max-width: 1024px) {
+    .feature-showcase-section {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    .feature-media-container {
+      justify-self: center;
+    }
     .ecosystem-grid { grid-template-columns: 1fr; }
     .simulator-iframe { height: 60vh; min-height: 450px; }
   }
@@ -512,6 +596,24 @@
     </div>
   </section>
 
+  <section class="feature-showcase-section" id="showcase">
+    <div class="feature-text-content">
+      <h2 class="feature-title">Say Hello To Modernism</h2>
+      <p class="feature-caption">Simply changing the volume of your media should not require more than one click. AVR Link's ScrubHud revolutionizes interface. Because simplicity.</p>
+      <ul class="feature-bullets">
+        <li>Simply hold and drag to activate the ScrubHud. Adjusting the value of this slider instantaneously changes the "Main" zone's volume.</li>
+        <li>Enable "Open at login" to start this app with your mac. Our remote is ready when you are.</li>
+        <li>Our cross-platform applications mean your expensive receiver purchase meshes with your ecosystem.</li>
+      </ul>
+    </div>
+    <div class="feature-media-container">
+      <video autoplay loop muted playsinline>
+        <source src="scrubhud.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </section>
+
   <section class="ecosystem-section" id="ecosystem">
     <div class="section-header">
       <div class="section-tag">ECOSYSTEM ARCHITECTURE</div>
@@ -571,3 +673,4 @@
 
 </body>
 </html>
+
