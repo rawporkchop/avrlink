@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,24 +254,10 @@
     padding: 0.85rem 1.5rem;
     border-bottom: 1px solid var(--border-subtle);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-  }
-
-  .simulator-status {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: var(--text-muted);
-  }
-
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--signal-green);
+    font-size: 0.8rem;
   }
 
   .simulator-iframe {
@@ -307,17 +292,18 @@
   }
 
   /* Feature Video Showcase Section */
-.feature-showcase-section {
-  padding: 6rem 13.2vw;
-  border-top: 1px solid var(--border-subtle);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
+  .feature-showcase-section {
+    padding: 6rem 13.2vw;
+    border-top: 1px solid var(--border-subtle);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
   .feature-text-content {
     display: flex;
     flex-direction: column;
@@ -564,7 +550,7 @@
 <main>
   <section class="hero-container reveal-1">
     <h1>Control your AV receiver, <em>seamlessly.</em></h1>
-    <p class="hero-sub">A lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
+    <p class="hero-sub">Try our lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
     <div class="cta-group">
       <a href="#simulator" class="btn btn-primary">Try Web Simulator</a>
       <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
@@ -579,14 +565,7 @@
   <section class="simulator-wrapper reveal-2" id="simulator">
     <div class="simulator-frame-container">
       <div class="simulator-header-bar">
-        <div class="simulator-status">
-          <div class="status-indicator">
-            <div class="signal-dot"></div>
-            <span>LIVE INTERACTIVE ENVIRONMENT</span>
-          </div>
-          <span>web_preview.html</span>
-        </div>
-        <div style="color: var(--text-dim); letter-spacing: 0.1em;">AVR-LINK SIMULATOR</div>
+        <div style="color: var(--text-dim); letter-spacing: 0.1em;">AVR Link Simulator</div>
       </div>
       <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
       <div class="simulator-footer-bar">
@@ -673,4 +652,3 @@
 
 </body>
 </html>
-
