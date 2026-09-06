@@ -146,17 +146,22 @@
     width: 100%;
   }
 
-  /* The app icon, watching the cursor from the back of the hero */
+  /* The app icon, watching the cursor from the back of the hero.
+     position: fixed (not absolute) so it behaves like a persistent
+     background object anchored to the viewport rather than scrolling
+     away with .hero-container's own document flow — it stays in view
+     as a floating badge and is simply painted over by whatever
+     content comes after the hero in the DOM once you scroll past it. */
   .hero-icon-wrap {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: -100;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding-right: 2vw;
+    justify-content: center;
     pointer-events: none;
     perspective: 1000px;
+    will-change: transform;
   }
 
   .hero-icon-frame {
@@ -164,6 +169,17 @@
     aspect-ratio: 1 / 1;
     opacity: 0.16;
     border-radius: 22%;
+    /* Pushed further from the camera established by .hero-icon-wrap's
+       `perspective: 1000px`. This is a plain translateZ on an ancestor of
+       #heroIcon, not a change to #heroIcon's OWN perspective(2400px)/rotate
+       transform — so the cursor look-at math doesn't need to change at all.
+       #heroIcon still establishes its own local 2400px perspective camera
+       for its child layers and rotates exactly as before; this translateZ
+       just moves that entire already-correct rig further from the outer
+       camera, which under perspective foreshortening uniformly shrinks and
+       recedes it (scale ≈ 1000 / (1000 + 400) here) without altering how
+       much it turns toward the cursor. */
+    transform: translateZ(-400px);
     /* No overflow:hidden here on purpose: any overflow value other than
        visible on an ancestor of a transform-style:preserve-3d element
        forces the browser to flatten that 3D subtree to a 2D bitmap
@@ -330,10 +346,18 @@
     animation-delay: 0.1s;
   }
 
+  /* phrase-part-2 no longer fades in as a single block — it's a plain,
+     always-visible container. Its three word-blocks below are what
+     actually animate, in sequence, so the sentence builds up in stages
+     rather than arriving all at once. */
   .hero-headline .phrase-part-2 {
     font-weight: 800;
     color: var(--text-primary);
-    animation-delay: 0.45s;
+    display: block;
+    opacity: 1;
+    animation: none;
+    transform: none;
+    filter: none;
   }
 
   @keyframes premiumLoadIn {
@@ -341,8 +365,76 @@
     100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
   }
 
+  /* ---- Catch-phrase build sequence: "that moves" → "seamlessly" → "with
+     you". Timeline (measured from page load, matching phrase-part-1's own
+     0.1s delay / 0.9s duration finishing at ~1.0s):
+
+       0.0s –1.0s   phrase-part-1 settles in (existing premiumLoadIn)
+       1.0s –1.5s   intentional pause — nothing new happens
+       1.5s –1.9s   "that moves" — quick reveal (0.4s)
+       1.9s –2.35s  hold, then a quick turnaround into "seamlessly"
+       2.35s–3.65s  "seamlessly" — slow, deliberate left-to-right reveal
+                    (1.3s), which is also when its blue→copper gradient
+                    is progressively uncovered
+       3.65s–4.0s   brief moment to register, before...
+       4.0s –4.35s  "with you" — quick, confident resolve (0.35s)
+
+     Each word-block starts hidden (opacity: 0) so nothing appears before
+     its cue, even though all three sit in the DOM/layout from the start. */
+  .hero-headline .word-block {
+    display: inline-block;
+    opacity: 0;
+  }
+
+  .hero-headline .word-moves {
+    animation: wordReveal 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: 0.5s;
+  }
+
+  .hero-headline .word-withyou {
+    animation: wordReveal 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: 1.8s;
+  }
+
+  @keyframes wordReveal {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* "seamlessly" is reached quickly but revealed slowly. It does not
+     slide onto the screen — the word sits in its final position the
+     whole time, and a clip-path mask uncovers it left-to-right, so it
+     reads as something progressively emerging rather than something
+     animated in. That uncovering is what also plays out the gradient:
+     since the mask opens left→right and the gradient runs blue→neutral→
+     copper across the same axis, the color progression appears exactly
+     as the letters do. */
+  .hero-headline .word-seamlessly {
+    opacity: 1;
+    vertical-align: bottom;
+  }
+
+  .hero-headline .seamlessly-inner {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--signal-blue) 0%, var(--text-muted) 50%, var(--signal-copper) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    clip-path: inset(0 100% 0 0);
+    animation: seamlessReveal 2.0s cubic-bezier(0.16, 0.7, 0.2, 1) forwards;
+    animation-delay: 0.90s;
+  }
+
+  @keyframes seamlessReveal {
+    0% { clip-path: inset(0 100% 0 0); }
+    100% { clip-path: inset(0 0% 0 0); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero-headline > span { animation: none; opacity: 1; transform: none; filter: none; }
+    .hero-headline .word-block { opacity: 1; }
+    .hero-headline .seamlessly-inner { animation: none; clip-path: none; }
     .signal-dot { animation: none; }
   }
 
@@ -718,7 +810,7 @@
     <div class="hero-text-column">
       <h1 class="hero-headline">
         <span class="phrase-part-1">Intuitive home theater control</span>
-        <span class="phrase-part-2">that moves seamlessly with you</span>
+        <span class="phrase-part-2"><span class="word-block word-moves">that moves</span> <span class="word-block word-seamlessly"><span class="seamlessly-inner">seamlessly</span></span> <span class="word-block word-withyou">with you</span></span>
       </h1>
       <p class="hero-sub">A native companion for your receiver — no cloud account, no laggy vendor web UI, just instant control from your Mac, iPhone, or wrist.</p>
       <div class="cta-group">
@@ -847,54 +939,235 @@
 (function () {
   var wrap = document.querySelector('.hero-icon-wrap');
   var icon = document.getElementById('heroIcon');
-  if (!wrap || !icon) return;
+  var frame = document.querySelector('.hero-icon-frame');
+  if (!wrap || !icon || !frame) return;
+
+  // Reparent to <body> (unconditionally, even for reduced-motion users —
+  // this is a stacking-order fix, not part of the animation). It starts
+  // out nested inside <section class="hero-container">, which — along
+  // with <main> — is a POSITIONED element with an explicit z-index. Later
+  // sibling <section>s (simulator-wrapper, feature-showcase-section, etc.)
+  // are plain, non-positioned elements, and per the CSS stacking rules a
+  // positioned z-index element paints AFTER non-positioned in-flow
+  // siblings regardless of DOM order — so hero-container's whole subtree
+  // (including this fixed icon) could end up rendering ABOVE later
+  // sections instead of behind them. Moving it to be body's first child
+  // puts it in the page's root stacking context instead, where its very
+  // low z-index (-100, see CSS) reliably keeps it behind everything —
+  // nav, hero text, and every later section — with no dependence on
+  // where other sections' own stacking contexts happen to fall.
+  document.body.insertBefore(wrap, document.body.firstChild);
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) return;
 
+  // ---- Responsive physics constants (desktop / tablet / phone), matching
+  // the existing 1024px / 640px breakpoints used elsewhere on this page.
+  //
+  // companionOffsetX/Y, companionScale and companionOpacity describe the
+  // icon's INITIAL "hero companion" state (prominent, beside the headline).
+  // restOpacity is its resting "background" opacity — the frame's own CSS
+  // opacity (0.16) is that same resting value, so once the transition
+  // finishes the JS-driven opacity matches what a reduced-motion user (who
+  // never runs this script) sees by default. ----
+  var TUNING = {
+    desktop: { maxSwayX: 26, maxScrollY: 180, idleBob: 2.5, idleSway: 0.8,
+               companionOffsetX: 260, companionDipY: 34, companionScale: 1.18, companionOpacity: 0.55, restOpacity: 0.16 },
+    tablet:  { maxSwayX: 16, maxScrollY: 114, idleBob: 2.0, idleSway: 0.6,
+               companionOffsetX: 130, companionDipY: 24, companionScale: 1.12, companionOpacity: 0.45, restOpacity: 0.16 },
+    phone:   { maxSwayX: 10, maxScrollY: 72,  idleBob: 1.5, idleSway: 0.4,
+               companionOffsetX: 60,  companionDipY: 16, companionScale: 1.08, companionOpacity: 0.35, restOpacity: 0.16 }
+  };
+
+  // Companion → background transition completes within this fraction of
+  // the viewport height (recomputed live, so resizing/rotating the device
+  // updates it automatically).
+  var COMPANION_SCROLL_RANGE_VH = 1.5; // 0.9 = 90% of viewport height
+
+  function currentTuning() {
+    var w = window.innerWidth;
+    if (w <= 640) return TUNING.phone;
+    if (w <= 1024) return TUNING.tablet;
+    return TUNING.desktop;
+  }
+
+  var tuning = currentTuning();
+  window.addEventListener('resize', function () { tuning = currentTuning(); });
+
   var rect = wrap.getBoundingClientRect();
   window.addEventListener('resize', function () { rect = wrap.getBoundingClientRect(); });
 
-  var targetX = 0, targetY = 0, curX = 0, curY = 0, ticking = false;
+  // ---- Companion "recognize → pull back → accelerate → overshoot →
+  // settle" curve. This is the classic animation anticipation/overshoot
+  // shape (an easeInOutBack), applied to the companion→background
+  // transition instead of a plain monotonic ease:
+  //   t≈0  → r slightly ABOVE 1 (pulls back further into the companion
+  //          pose / opposite direction from where it's about to travel)
+  //   mid  → r falls steeply through 1→0 (the decisive accelerate)
+  //   t≈1  → r dips slightly BELOW 0 just before the end (overshoots past
+  //          the background position/scale), then settles to exactly 0
+  // COMPANION_BACK_INTENSITY controls how pronounced that anticipation/
+  // overshoot is — kept low and restrained per spec (the default Penner
+  // easeInOutBack constant is 1.70158; this is deliberately gentler).
+  var COMPANION_BACK_INTENSITY = 1.05;
 
-  function setTarget(clientX, clientY) {
+  function companionRemaining(t) {
+    var c1 = COMPANION_BACK_INTENSITY;
+    var c2 = c1 * 1.525;
+    var e = t < 0.5
+      ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+      : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+    return 1 - e; // 1 = fully companion, 0 = fully settled into background
+  }
+
+  // ---- Cursor → 3D rotation (unchanged behavior, now feeding a
+  // continuously-running loop instead of an event-driven one) ----
+  var targetX = 0, targetY = 0, curX = 0, curY = 0;
+
+  function setCursorTarget(clientX, clientY) {
     var cx = rect.left + rect.width / 2;
     var cy = rect.top + rect.height / 2;
     var dx = (clientX - cx) / (rect.width / 2);
     var dy = (clientY - cy) / (rect.height / 2);
     targetX = Math.max(-1, Math.min(1, dx));
     targetY = Math.max(-1, Math.min(1, dy));
-    if (!ticking) { ticking = true; requestAnimationFrame(render); }
   }
 
-  function render() {
+  window.addEventListener('mousemove', function (e) { setCursorTarget(e.clientX, e.clientY); });
+  document.addEventListener('mouseleave', function () { targetX = 0; targetY = 0; });
+
+  // ---- Scroll velocity → horizontal sway target ----
+  var lastScrollY = window.scrollY;
+  var scrollVelocity = 0;
+
+  window.addEventListener('scroll', function () {
+    var currentScrollY = window.scrollY;
+    scrollVelocity = currentScrollY - lastScrollY;
+    lastScrollY = currentScrollY;
+  }, { passive: true });
+
+  // ---- Easing: X = sway (light), Y = mass (heavier/slower). Plain
+  // exponential easing — approaches and settles directly, with no
+  // overshoot or oscillation ("vibration"). Asymmetric on purpose: a
+  // slower ease when the target is growing (pos lags noticeably behind
+  // the scroll — the "inertia" feel), and a faster ease when the target
+  // is shrinking back toward 0 (a snappier return to center). ----
+  var EASE_X_LAG = 0.010, EASE_X_RETURN = 0.045;
+  var EASE_Y_LAG = 0.021, EASE_Y_RETURN = 0.105;
+
+  var posX = 0;
+  var posY = 0;
+
+  function easeToward(pos, target, easeLag, easeReturn) {
+    var ease = Math.abs(target) > Math.abs(pos) ? easeLag : easeReturn;
+    return pos + (target - pos) * ease;
+  }
+
+  // ---- Idle bob / sway ----
+  var IDLE_BOB_SPEED = 1.15;
+  var IDLE_SWAY_SPEED = 0.75;
+  var time = 0;
+  var lastFrameTime = null;
+
+  function render(now) {
+    if (lastFrameTime === null) lastFrameTime = now;
+    var deltaTime = Math.min(0.05, (now - lastFrameTime) / 1000); // seconds, clamped
+    lastFrameTime = now;
+    time += deltaTime;
+
+    // 1. Scroll velocity decays back toward 0 once scrolling stops (it's an
+    // instantaneous force, not an accumulator — the 'scroll' listener above
+    // only sets it while scrolling is actually happening). A slower decay
+    // here stretches out how long that force keeps feeding the springs,
+    // which is part of making the whole motion feel longer/more fluid
+    // rather than a quick jolt.
+    scrollVelocity *= 0.95;
+
+    // 2. Horizontal target: instantaneous force from scroll velocity.
+    var targetSwayX = Math.max(-tuning.maxSwayX, Math.min(tuning.maxSwayX, scrollVelocity * -0.8));
+
+    // 3. Vertical target: also an instantaneous force from scroll velocity
+    // (same decaying signal as X), so the target itself returns to 0 as
+    // soon as scrolling stops. Combined with the slower EASE_Y below, this
+    // gives Y a heavier trail than X while still easing straight back to
+    // center with no bounce.
+    var targetScrollY = Math.max(-tuning.maxScrollY, Math.min(tuning.maxScrollY, scrollVelocity * -1.4));
+
+    // 4. Ease horizontal position toward its target — no overshoot.
+    posX = easeToward(posX, targetSwayX, EASE_X_LAG, EASE_X_RETURN);
+
+    // 5. Ease vertical position toward its target — no overshoot.
+    posY = easeToward(posY, targetScrollY, EASE_Y_LAG, EASE_Y_RETURN);
+
+    // 6. Idle bob + idle sway, layered on top of the springs.
+    var idleBob = Math.sin(time * IDLE_BOB_SPEED) * tuning.idleBob;
+    var idleSway = Math.sin(time * IDLE_SWAY_SPEED + 1.4) * tuning.idleSway;
+
+    // 6b. Hero companion → background transition: "recognize → pull back →
+    // accelerate → overshoot → settle → follow." `progress` runs 0→1 over
+    // the first COMPANION_SCROLL_RANGE px of scroll and never reverses, so
+    // this is a one-time settle, not a competing animation — it's summed
+    // into the same X/Y/scale/opacity the parallax system already drives.
+    //
+    // `r` (via companionRemaining) is NOT a plain monotonic ease: it starts
+    // slightly ABOVE 1 (a brief, subtle pull further into the companion
+    // pose — the "opposite direction" anticipation cue), falls steeply
+    // through the middle (the decisive accelerate), and dips slightly
+    // BELOW 0 near the end (overshooting past the background position)
+    // before settling to exactly 0. Multiplying offset/scale by `r`
+    // directly means the overshoot phase (r<0) naturally shrinks the icon
+    // a little past its final scale and nudges it a little past center,
+    // then eases back — no separate overshoot logic needed.
+    //
+    // Our resting "background" position is centered, so unlike the plan's
+    // generic "shifts right/downward" framing — written for a background
+    // position lower-right of the companion spot — the anticipation here
+    // is a brief push further RIGHT (away from center, opposite the
+    // eventual leftward travel) rather than further down-right.
+    var companionProgress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * COMPANION_SCROLL_RANGE_VH)));
+    var r = companionRemaining(companionProgress);
+
+    // Opacity fades on its own plain (monotonic) ease — an opacity
+    // undershoot would just look like a flicker, not a physical cue, so it
+    // isn't driven by the same overshoot curve as position/scale.
+    var opacityEase = 1 - Math.pow(1 - companionProgress, 3);
+    var opacityRemaining = 1 - opacityEase;
+
+    var companionX = tuning.companionOffsetX * r;
+    var companionDip = tuning.companionDipY * r;
+    var companionScaleAmt = 1 + (tuning.companionScale - 1) * r;
+    var frameOpacity = tuning.restOpacity + (tuning.companionOpacity - tuning.restOpacity) * opacityRemaining;
+
+    var finalX = posX + idleSway + companionX;
+    // finalY sums THREE independent things: posY (the velocity-driven
+    // vertical spring/inertia from steps 3+5 — unaffected by the
+    // transition's length, so it stays alive throughout even a long
+    // COMPANION_SCROLL_RANGE), idleBob, and companionDip (the transition's
+    // own anticipation/overshoot dip). The transition never suppresses or
+    // replaces the vertical inertia — it just adds on top of it.
+    var finalY = posY + idleBob + companionDip;
+
+    // 7. Apply the wrapper translation + companion scale. Pure translation
+    // and uniform scale only — no perspective/rotation here, that stays
+    // owned by #heroIcon below.
+    wrap.style.transform =
+      'translate3d(' + finalX.toFixed(2) + 'px, ' + finalY.toFixed(2) + 'px, 0) scale(' + companionScaleAmt.toFixed(3) + ')';
+    frame.style.opacity = frameOpacity.toFixed(3);
+
+    // 8. Cursor rotation, applied to #heroIcon exactly as before.
     curX += (targetX - curX) * 0.08;
     curY += (targetY - curY) * 0.08;
 
-    // Max tilt trimmed from 16deg to 8deg: with the pivot now anchored at the
-    // background's depth (see .hero-icon-parallax transform-origin), the glyph
-    // layer's screen-space throw roughly doubled compared to the old
-    // center-pivot setup, so the angle is halved to keep it inside the frame.
     var rotateY = curX * 12;   // turns toward the cursor left/right
     var rotateX = curY * -12;  // and tilts up/down toward it
 
-    // Rotate the whole 3D stage as one rigid body. We do NOT hand-tune a
-    // separate translate per layer — each layer's fixed translateZ (set in
-    // CSS) is what makes it sweep a different distance across the screen
-    // for the same rotation, exactly as it would with real physical depth
-    // under a perspective camera. Closer layers naturally travel further.
     icon.style.transform =
       'perspective(2400px) rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
 
-    if (Math.abs(targetX - curX) > 0.001 || Math.abs(targetY - curY) > 0.001) {
-      requestAnimationFrame(render);
-    } else {
-      ticking = false;
-    }
+    requestAnimationFrame(render);
   }
 
-  window.addEventListener('mousemove', function (e) { setTarget(e.clientX, e.clientY); });
-  document.addEventListener('mouseleave', function () { targetX = 0; targetY = 0; if (!ticking) { ticking = true; requestAnimationFrame(render); } });
+  requestAnimationFrame(render);
 })();
 </script>
 </body>
