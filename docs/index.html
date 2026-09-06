@@ -8,69 +8,57 @@
 <title>AVR Link — Seamless AV Receiver Control</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-base: #060b11;
-    
-    /* Updated card surface tones to translucent deep twilight slate with backdrop blur */
-    --bg-surface: rgba(13, 20, 33, 0.75);
-    --bg-surface-elevated: rgba(21, 31, 50, 0.85);
-    --border-subtle: rgba(42, 65, 90, 0.4);
-    --border-strong: rgba(56, 189, 248, 0.25);
-    
-    --icon-blue: #0284c7;
-    --icon-blue-bright: #38bdf8;
-    --icon-blue-glow: rgba(56, 189, 248, 0.22);
-    
-    --icon-copper: #d97724;
-    --icon-copper-bright: #f97316;
-    --icon-copper-glow: rgba(217, 119, 36, 0.2);
-    
-    --signal-green: #10b981;
-    
-    --text-primary: #f8fafc;
-    --text-muted: #8b9eb3;
-    --text-dim: #475d75;
-    
+    /* Matte-black chassis, not blue-black — like anodized aluminum under warm room light */
+    --chassis: #0c0d0f;
+    --panel: rgba(255, 255, 255, 0.03);
+    --panel-elevated: rgba(255, 255, 255, 0.05);
+    --hairline: rgba(255, 255, 255, 0.09);
+    --hairline-strong: rgba(255, 255, 255, 0.18);
+
+    /* Two signal channels, lifted straight from the app icon: cool digital / warm analog */
+    --signal-blue: #4da3e0;
+    --signal-blue-dim: rgba(77, 163, 224, 0.14);
+    --signal-copper: #d98a4a;
+    --signal-copper-dim: rgba(217, 138, 74, 0.14);
+
+    --text-primary: #f3f1ec;
+    --text-muted: #93979d;
+    --text-dim: #55585d;
+
     --font-display: 'Syne', sans-serif;
     --font-body: 'DM Sans', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
 
-    --radius-card: 16px;
-    --nav-height: 70px;
+    --nav-height: 72px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
+
   html {
     scroll-behavior: smooth;
-    background-color: var(--bg-base);
+    background-color: var(--chassis);
     color: var(--text-primary);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
 
-  @keyframes revealUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  ::selection { background: var(--signal-blue-dim); color: var(--text-primary); }
 
   @keyframes pulseSignal {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
+    50% { opacity: 0.4; }
   }
 
-  .reveal-1 { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  .reveal-2 { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; opacity: 0; }
-
+  /* Faint edge vignette — the way rack gear looks photographed in a dim room. No color wash. */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, var(--icon-blue-bright) 0%, var(--icon-copper-bright) 100%);
-    opacity: 0.15;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -85,30 +73,30 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 4vw;
-    background: rgba(6, 11, 17, 0.85);
+    background: rgba(12, 13, 15, 0.85);
     backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--hairline);
   }
 
   .nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.12em;
+    gap: 0.65rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
     color: var(--text-primary);
     text-decoration: none;
   }
 
   .signal-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background-color: var(--icon-blue-bright);
-    box-shadow: 0 0 10px var(--icon-blue-bright);
-    animation: pulseSignal 3s infinite ease-in-out;
+    background-color: var(--signal-blue);
+    box-shadow: 0 0 8px var(--signal-blue);
+    animation: pulseSignal 4s infinite ease-in-out;
   }
 
   .nav-links {
@@ -116,10 +104,7 @@
     align-items: center;
     gap: 2.2rem;
     list-style: none;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 0.92rem;
   }
 
   .nav-links a {
@@ -129,7 +114,7 @@
   }
 
   .nav-links a:hover {
-    color: var(--icon-blue-bright);
+    color: var(--text-primary);
   }
 
   main {
@@ -139,129 +124,323 @@
     margin: 0 auto;
   }
 
-  /* Full-Viewport Hero Section */
+  /* Hero */
   .hero-container {
+    position: relative;
+    z-index: 0;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    max-width: 1000px;
-    margin: 0 auto;
     min-height: calc(100vh - var(--nav-height));
     min-height: calc(100dvh - var(--nav-height));
     padding: 2rem 4vw;
+    overflow: hidden;
   }
 
-  h1 {
+  .hero-text-column {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    max-width: 780px;
+    width: 100%;
+  }
+
+  /* The app icon, watching the cursor from the back of the hero */
+  .hero-icon-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 2vw;
+    pointer-events: none;
+    perspective: 1000px;
+  }
+
+  .hero-icon-frame {
+    width: clamp(240px, 32vw, 480px);
+    aspect-ratio: 1 / 1;
+    opacity: 0.16;
+    border-radius: 22%;
+    /* No overflow:hidden here on purpose: any overflow value other than
+       visible on an ancestor of a transform-style:preserve-3d element
+       forces the browser to flatten that 3D subtree to a 2D bitmap
+       before compositing. That flattening is exactly what was making
+       the slab stack look paper-thin and killing the visible response
+       to rotation. The stack doesn't need frame-level clipping anyway —
+       each slice is already rounded. */
+  }
+
+  .hero-icon-parallax {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform: perspective(2400px) rotateX(0deg) rotateY(0deg);
+    transform-style: preserve-3d;
+    will-change: transform;
+    /* Pivot anchored at the background slab's depth (matches icon-layer-bg's
+       translateZ), not the stage's own geometric center. The glyph layer sits
+       at a POSITIVE translateZ (in front) while the background sits at
+       NEGATIVE translateZ (behind) — with the default center pivot they were
+       on opposite sides of Z=0, so the same rotation sent them swinging in
+       opposite screen directions (a scissoring/spinning look) instead of
+       together. Anchoring the pivot at the background keeps it essentially
+       still and makes the glyph do the (single-direction) swinging, which is
+       what "far layer barely shifts, near one swings much further" actually
+       requires. */
+    transform-origin: 50% 50% -180px;
+  }
+
+  /* Real layers occupying real depth. The stage above rotates as one
+     rigid body toward the cursor; each layer's own translateZ decides
+     how much screen-space motion that shared rotation produces —
+     the far layer barely shifts, the near one swings much further. */
+  .icon-layer {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .icon-layer-bg {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(-180px);
+  }
+
+  /* Safety net: a single oversized, flattened, far-back copy of the
+     gradient. It's never meant to be seen as itself — it just guarantees
+     that if the visible slice stack's edge ever outruns the frame at
+     extreme tilt, what shows through is more darkened material, not a
+     hole in the icon. */
+  /* icon-slab-backing removed: with the current perspective/rotation
+     range the real slice stack never opens a gap, so the fallback
+     layer was unnecessary and kept surfacing as a visible ghost
+     shape whenever the tuning changed. */
+
+  /* The background is a genuine physical slab: dozens of identical
+     rounded squares stacked a few pixels apart in real Z, each a touch
+     darker than the one in front — but still carrying the SAME blue-to-
+     copper gradient, just dimmed (brightness scaling keeps hue intact).
+     Sized close to the frame itself (not oversized) so tilting actually
+     brings its stepped, gradient-colored edge into view instead of
+     hiding it off-screen. */
+  #iconSlabMount {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .icon-slab-slice {
+    position: absolute;
+    inset: -3%;
+    border-radius: 22%;
+    background: linear-gradient(180deg, #1b6cae 0%, #c58e56 70%);
+    background: linear-gradient(180deg, color(display-p3 0.10278 0.42419 0.68586) 0%, color(display-p3 0.77674 0.55548 0.33998) 70%);
+    transform: translateZ(var(--z));
+    filter: brightness(var(--b));
+  }
+
+  /* Light source from the top-left, painted only on the front face:
+     a soft hotspot plus a faint directional sheen raking the gradient. */
+  .icon-slab-front::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 22%;
+    background:
+      radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.18) 28%, transparent 60%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 45%);
+    mix-blend-mode: overlay;
+  }
+
+  .icon-layer-glyph {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    /* pulled much further toward the viewer, away from the background,
+       so the same shared rotation sweeps it noticeably further */
+    transform: translateZ(-140px) scale(1);
+  }
+
+  /* icon.json's glyph group: scale 4.5 on a 1024pt canvas, translated
+     [0, 79.1618125]pt from center. viewBox is 187.396 x 200.38, so:
+       width  = 187.396 * 4.5 / 1024 = 82.352% of the canvas
+       top    = 50% + 79.1618125 / 1024 = 57.731% (center, shifted down)
+     left/top position the un-scaled center point on the canvas; the
+     translate(-50%, -50%) below re-centers the (already up-scaled) art
+     on that point, same as Icon Composer's own transform order.
+
+     The glyph gets the same real-slab treatment as the background: five
+     copies of the actual badge artwork, each a couple of pixels further
+     back and a shade darker. Because drop-shadow/brightness follow the
+     PNG's own alpha silhouette, the "sides" that appear on tilt trace
+     the wifi-badge outline itself, not a rectangle. */
+  .glyph-slice {
+    position: absolute;
+    left: 50%;
+    top: 57.731%;
+    width: 82.352%;
+    height: auto;
+    display: block;
+    transform: translate(-50%, -50%) translateZ(var(--z));
+    filter: brightness(var(--b));
+  }
+
+  .glyph-front {
+    /* light raking in from the top-left: a bright rim on that edge,
+       and the cast shadow falls away to the bottom-right */
+    filter:
+      drop-shadow(-2px -2px 2px rgba(255, 255, 255, 0.35))
+      drop-shadow(14px 26px 30px rgba(0, 0, 0, 0.5));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-icon-parallax { transition: none; }
+  }
+
+  @media (max-width: 1024px) {
+    .hero-icon-wrap { justify-content: center; opacity: 0.6; }
+    .hero-icon-frame { width: 55vw; opacity: 0.1; overflow: hidden; }
+  }
+
+  .hero-headline {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 6.5vw, 5.2rem);
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
+    font-size: clamp(2.4rem, 5.6vw, 4.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.75rem;
   }
 
-  h1 em {
-    font-style: normal;
-    background: linear-gradient(135deg, var(--icon-blue-bright) 0%, var(--icon-copper-bright) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .hero-headline > span {
+    display: block;
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+    filter: blur(6px);
+    animation: premiumLoadIn 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    will-change: opacity, transform, filter;
+  }
+
+  /* Weight and brightness carry the emphasis — no color accent on the line */
+  .hero-headline .phrase-part-1 {
+    font-weight: 500;
+    color: var(--text-muted);
+    animation-delay: 0.1s;
+  }
+
+  .hero-headline .phrase-part-2 {
+    font-weight: 800;
+    color: var(--text-primary);
+    animation-delay: 0.45s;
+  }
+
+  @keyframes premiumLoadIn {
+    0% { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(6px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-headline > span { animation: none; opacity: 1; transform: none; filter: none; }
+    .signal-dot { animation: none; }
   }
 
   .hero-sub {
-    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
     line-height: 1.6;
     color: var(--text-muted);
-    max-width: 60ch;
-    margin-bottom: 2.5rem;
+    max-width: 52ch;
+    margin-bottom: 2.25rem;
   }
 
   .cta-group {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1.25rem;
+    gap: 1rem;
     flex-wrap: wrap;
+    margin-bottom: 3rem;
   }
 
   .btn {
-    font-family: var(--font-mono);
-    font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
     font-weight: 600;
-    padding: 1rem 2rem;
+    padding: 0.85rem 1.6rem;
     text-decoration: none;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: all 0.25s ease;
-    border-radius: 3px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, var(--icon-blue) 0%, #0369a1 100%);
-    color: #ffffff;
-    border: 1px solid var(--icon-blue-bright);
-    box-shadow: 0 0 25px var(--icon-blue-glow);
+    background: var(--signal-blue);
+    color: #06131c;
+    border: 1px solid var(--signal-blue);
   }
 
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 30px rgba(56, 189, 248, 0.35);
+    box-shadow: 0 8px 28px var(--signal-blue-dim);
   }
 
   .btn-secondary {
-    background: rgba(217, 119, 36, 0.08);
-    color: var(--icon-copper-bright);
-    border: 1px solid rgba(217, 119, 36, 0.3);
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--hairline-strong);
   }
 
   .btn-secondary:hover {
-    border-color: var(--icon-copper-bright);
-    background: rgba(217, 119, 36, 0.16);
+    border-color: var(--signal-copper);
+    color: var(--signal-copper);
     transform: translateY(-2px);
   }
 
   .platforms-strip {
     display: flex;
-    gap: 1.8rem;
-    margin-top: 3.5rem;
-    font-family: var(--font-mono);
-    font-size: clamp(0.7rem, 1vw, 0.8rem);
+    gap: 2rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
   }
 
-  .platforms-strip span {
-    color: var(--icon-copper-bright);
+  .platforms-strip div {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
   }
 
-  /* Embedded Simulator Section */
+  .platform-pip {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--signal-copper);
+  }
+
+  /* Simulator */
   .simulator-wrapper {
     padding: 2rem 4vw 6rem;
   }
 
   .simulator-frame-container {
-    background: var(--bg-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
+    background: var(--panel);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.85), 0 0 50px var(--icon-blue-glow);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
   }
 
   .simulator-header-bar {
-    background: var(--bg-surface-elevated);
+    background: var(--panel-elevated);
     padding: 0.85rem 1.5rem;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--hairline);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
   }
 
   .simulator-iframe {
@@ -270,24 +449,23 @@
     min-height: 550px;
     max-height: 850px;
     border: none;
-    background: var(--bg-base);
+    background: var(--chassis);
     display: block;
   }
 
   .simulator-footer-bar {
-    background: var(--bg-surface);
+    background: var(--panel);
     padding: 0.85rem 1.5rem;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--hairline);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
   }
 
   .simulator-footer-bar a {
-    color: var(--icon-blue-bright);
+    color: var(--signal-blue);
     text-decoration: none;
   }
 
@@ -295,76 +473,64 @@
     text-decoration: underline;
   }
 
-  /* Feature Video Showcase Section */
+  /* Feature showcase */
   .feature-showcase-section {
-    padding: 6rem 13.2vw;
-    border-top: 1px solid var(--border-subtle);
+    padding: 7rem 13.2vw;
+    border-top: 1px solid var(--hairline);
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: 4.5rem;
     align-items: center;
     width: 100%;
-    max-width: none;
-    margin: 0;
   }
 
   .feature-text-content {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.35rem;
   }
 
   .feature-title {
     font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+    font-size: clamp(1.7rem, 2.8vw, 2.5rem);
     font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   .feature-caption {
     color: var(--text-muted);
     font-size: 1.05rem;
     line-height: 1.6;
+    max-width: 44ch;
   }
 
   .feature-bullets {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.1rem;
     margin-top: 0.5rem;
   }
 
   .feature-bullets li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--hairline-strong);
     color: var(--text-primary);
     font-size: 0.98rem;
-    line-height: 1.5;
-  }
-
-  .feature-bullets li::before {
-    content: "◆";
-    color: var(--icon-blue-bright);
-    font-size: 0.75rem;
-    margin-top: 0.2rem;
-    flex-shrink: 0;
+    line-height: 1.55;
   }
 
   .feature-media-container {
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     aspect-ratio: 3 / 4;
     justify-self: end;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
     overflow: hidden;
-    background: var(--bg-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(56, 189, 248, 0.1);
+    background: var(--panel);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
   }
 
   .feature-media-container video {
@@ -374,107 +540,75 @@
     display: block;
   }
 
-  /* Ecosystem Section */
+  /* Ecosystem — one channel strip, not three floating cards */
   .ecosystem-section {
-    padding: 6rem 4vw;
-    border-top: 1px solid var(--border-subtle);
+    padding: 7rem 4vw;
+    border-top: 1px solid var(--hairline);
   }
 
   .section-header {
-    margin-bottom: 4rem;
-  }
-
-  .section-tag {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--icon-copper-bright);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
+    margin-bottom: 3.5rem;
+    max-width: 60ch;
   }
 
   .section-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-size: clamp(1.9rem, 3.2vw, 2.8rem);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
 
-  .ecosystem-grid {
+  .ecosystem-strip {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
+    background: var(--panel);
+    overflow: hidden;
   }
 
-  .ecosystem-card {
-    background: var(--bg-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-subtle);
-    padding: 2.5rem;
-    border-radius: 4px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+  .ecosystem-column {
+    padding: 2.75rem 2.25rem;
+    border-left: 1px solid var(--hairline);
+    border-top: 2px solid transparent;
   }
 
-  .ecosystem-card:hover {
-    border-color: var(--border-strong);
-    background: var(--bg-surface-elevated);
-    transform: translateY(-3px);
-  }
+  .ecosystem-column:first-child { border-left: none; }
 
-  .ecosystem-card.featured {
-    background: linear-gradient(180deg, var(--bg-surface-elevated) 0%, var(--bg-surface) 100%);
-    border-color: rgba(56, 189, 248, 0.35);
-  }
+  .ecosystem-column.primary { border-top-color: var(--signal-blue); }
 
   .card-platform-tag {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--icon-blue-bright);
-    background: rgba(56, 189, 248, 0.1);
-    padding: 0.25rem 0.6rem;
-    border-radius: 2px;
-    align-self: flex-start;
-    margin-bottom: 2rem;
-    letter-spacing: 0.1em;
+    display: block;
+    font-size: 0.8rem;
+    color: var(--signal-copper);
+    margin-bottom: 1.75rem;
   }
 
-  .ecosystem-card:nth-child(2) .card-platform-tag,
-  .ecosystem-card:nth-child(3) .card-platform-tag {
-    color: var(--icon-copper-bright);
-    background: rgba(217, 119, 36, 0.1);
-  }
+  .ecosystem-column.primary .card-platform-tag { color: var(--signal-blue); }
 
   .card-icon {
-    font-size: 2rem;
+    font-size: 1.9rem;
     margin-bottom: 1.5rem;
     color: var(--text-primary);
   }
 
   .card-title {
     font-family: var(--font-display);
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
 
   .card-body {
     color: var(--text-muted);
-    font-size: 0.98rem;
-    line-height: 1.65;
+    font-size: 0.96rem;
+    line-height: 1.6;
   }
 
-  /* Support Banner */
+  /* Support banner */
   .support-section {
     padding: 6rem 4vw;
-    background: var(--bg-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--hairline);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -482,63 +616,76 @@
     flex-wrap: wrap;
   }
 
+  .support-text { max-width: 46ch; }
+
   .support-text h2 {
     font-family: var(--font-display);
-    font-size: 2.2rem;
+    font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.6rem;
   }
 
   .support-text p {
     color: var(--text-muted);
-    font-size: 1.05rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+
+  .support-text a {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--hairline-strong);
+    text-underline-offset: 3px;
   }
 
   /* Footer */
   footer {
-    padding: 3rem 4vw;
-    border-top: 1px solid var(--border-subtle);
+    padding: 2.5rem 4vw;
+    border-top: 1px solid var(--hairline);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    font-size: 0.88rem;
+    color: var(--text-dim);
     flex-wrap: wrap;
     gap: 1rem;
   }
 
   .footer-links {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   footer a {
-    color: var(--text-primary);
+    color: var(--text-muted);
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   footer a:hover {
-    color: var(--icon-blue-bright);
+    color: var(--text-primary);
   }
 
   @media (max-width: 1024px) {
     .feature-showcase-section {
       grid-template-columns: 1fr;
       gap: 2.5rem;
+      padding: 5rem 6vw;
     }
-    .feature-media-container {
-      justify-self: center;
-    }
-    .ecosystem-grid { grid-template-columns: 1fr; }
+    .feature-media-container { justify-self: center; }
+    .ecosystem-strip { grid-template-columns: 1fr; }
+    .ecosystem-column { border-left: none; border-top: 1px solid var(--hairline); }
+    .ecosystem-column:first-child { border-top: none; }
+    .ecosystem-column.primary { border-top: 2px solid var(--signal-blue); }
     .simulator-iframe { height: 60vh; min-height: 450px; }
   }
 
   @media (max-width: 640px) {
     .support-section { flex-direction: column; align-items: flex-start; }
-    .platforms-strip { flex-direction: column; gap: 0.6rem; margin-top: 2rem; }
+    .platforms-strip { flex-direction: column; gap: 0.7rem; }
     .hero-container { min-height: calc(100dvh - var(--nav-height)); padding: 1.5rem 4vw; }
+    .nav-links { gap: 1.3rem; font-size: 0.85rem; }
   }
 </style>
 </head>
@@ -547,7 +694,7 @@
 <nav>
   <a href="#" class="nav-brand">
     <div class="signal-dot"></div>
-    <span>AVR LINK</span>
+    <span>AVR Link</span>
   </a>
   <ul class="nav-links">
     <li><a href="support.html">Support</a></li>
@@ -557,41 +704,54 @@
 </nav>
 
 <main>
-  <section class="hero-container reveal-1">
-    <h1>Control your AV receiver, <em>seamlessly.</em></h1>
-    <p class="hero-sub">Try our lightweight companion suite built entirely around your local Apple experience. Zero cloud tracking, responsive control, absolute simplicity.</p>
-    <div class="cta-group">
-      <a href="#simulator" class="btn btn-primary">Try Web Simulator</a>
-      <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+  <section class="hero-container">
+    <div class="hero-icon-wrap" aria-hidden="true">
+      <div class="hero-icon-frame">
+        <div class="hero-icon-parallax" id="heroIcon">
+          <div class="icon-layer icon-layer-bg">
+          <div id="iconSlabMount"></div>
+        </div>
+          <div class="icon-layer icon-layer-glyph" id="iconGlyphMount"></div>
+        </div>
+      </div>
     </div>
-    <div class="platforms-strip">
-      <div><span>◆</span> macOS Menu Bar</div>
-      <div><span>◆</span> iOS Companion</div>
-      <div><span>◆</span> watchOS Remote</div>
+    <div class="hero-text-column">
+      <h1 class="hero-headline">
+        <span class="phrase-part-1">Intuitive home theater control</span>
+        <span class="phrase-part-2">that moves seamlessly with you</span>
+      </h1>
+      <p class="hero-sub">A native companion for your receiver — no cloud account, no laggy vendor web UI, just instant control from your Mac, iPhone, or wrist.</p>
+      <div class="cta-group">
+        <a href="#simulator" class="btn btn-primary">Try the simulator</a>
+        <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View source on GitHub</a>
+      </div>
+      <div class="platforms-strip">
+        <div><span class="platform-pip"></span> macOS Menu Bar</div>
+        <div><span class="platform-pip"></span> iOS Companion</div>
+        <div><span class="platform-pip"></span> watchOS Remote</div>
+      </div>
     </div>
   </section>
 
-  <section class="simulator-wrapper reveal-2" id="simulator">
+  <section class="simulator-wrapper" id="simulator">
     <div class="simulator-frame-container">
-      <div class="simulator-header-bar">
-        <div style="color: var(--text-dim); letter-spacing: 0.1em;">AVR Link Simulator</div>
-      </div>
+      <div class="simulator-header-bar">AVR Link Simulator</div>
       <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
       <div class="simulator-footer-bar">
-        <span>DIRECT PREVIEW MODE</span>
-        <a href="web_preview.html" target="_blank" rel="noopener">↗ Open Simulator Fullscreen</a>
+        <span>Direct preview mode</span>
+        <a href="web_preview.html" target="_blank" rel="noopener">Open fullscreen ↗</a>
       </div>
     </div>
   </section>
 
   <section class="feature-showcase-section" id="showcase">
     <div class="feature-text-content">
-      <h2 class="feature-title">Say Hello To Modernism</h2>
-      <p class="feature-caption">Simply changing the volume of your media should not require more than one click. AVR Link's ScrubHud revolutionizes interface. Because simplicity.</p>
+      <h2 class="feature-title">Volume control, down to one gesture.</h2>
+      <p class="feature-caption">AVR Link's ScrubHud lives quietly in your menu bar until you need it — then it's one drag away.</p>
       <ul class="feature-bullets">
-        <li>Simply hold and drag to activate the ScrubHud. Adjusting the value of this slider instantaneously changes the "Main" zone's volume.</li>
-        <li>Enable "Open at login" to start this app with your mac. Our remote is ready when you are.</li>
-        <li>Our cross-platform applications mean your expensive receiver purchase meshes with your ecosystem.</li>
+        <li>Hold and drag anywhere in the menu bar to open the ScrubHud and adjust the Main zone's volume instantly.</li>
+        <li>Turn on Open at Login and it's already running by the time you sit down to listen.</li>
+        <li>One app follows you across Mac, iPhone, and Apple Watch — no per-platform relearning.</li>
       </ul>
     </div>
     <div class="feature-media-container">
@@ -604,36 +764,29 @@
 
   <section class="ecosystem-section" id="ecosystem">
     <div class="section-header">
-      <div class="section-tag">ECOSYSTEM ARCHITECTURE</div>
       <h2 class="section-title">One receiver. Three ways to reach it.</h2>
     </div>
 
-    <div class="ecosystem-grid">
-      <div class="ecosystem-card featured">
-        <div>
-          <span class="card-platform-tag">macOS</span>
-          <div class="card-icon">⌘</div>
-          <h3 class="card-title">Menu Bar</h3>
-          <p class="card-body">A compact desktop utility resting in your status bar. Mix volume fluidly using an AppKit-powered scrub HUD with integrated desktop blurs.</p>
-        </div>
+    <div class="ecosystem-strip">
+      <div class="ecosystem-column primary">
+        <span class="card-platform-tag">macOS</span>
+        <div class="card-icon">⌘</div>
+        <h3 class="card-title">Menu Bar</h3>
+        <p class="card-body">A compact desktop utility resting in your status bar. Mix volume fluidly using an AppKit-powered scrub HUD with integrated desktop blurs.</p>
       </div>
 
-      <div class="ecosystem-card">
-        <div>
-          <span class="card-platform-tag">iOS</span>
-          <div class="card-icon">◱</div>
-          <h3 class="card-title">Companion</h3>
-          <p class="card-body">Complete remote parity with Home Screen widgets, Lock Screen status indicators, Control Center items, and native hardware button integration.</p>
-        </div>
+      <div class="ecosystem-column">
+        <span class="card-platform-tag">iOS</span>
+        <div class="card-icon">◱</div>
+        <h3 class="card-title">Companion</h3>
+        <p class="card-body">Complete remote parity with Home Screen widgets, Lock Screen status indicators, Control Center items, and native hardware button integration.</p>
       </div>
 
-      <div class="ecosystem-card">
-        <div>
-          <span class="card-platform-tag">watchOS</span>
-          <div class="card-icon">◐</div>
-          <h3 class="card-title">Remote</h3>
-          <p class="card-body">A sleek wrist controller leveraging the Digital Crown for volume adjustments, mirroring status via direct iPhone background relays.</p>
-        </div>
+      <div class="ecosystem-column">
+        <span class="card-platform-tag">watchOS</span>
+        <div class="card-icon">◐</div>
+        <h3 class="card-title">Remote</h3>
+        <p class="card-body">A sleek wrist controller leveraging the Digital Crown for volume adjustments, mirroring status via direct iPhone background relays.</p>
       </div>
     </div>
   </section>
@@ -641,10 +794,10 @@
   <section class="support-section" id="support">
     <div class="support-text">
       <h2>Built by one person. Runs on all your Apple devices.</h2>
-      <p>Need help or have questions? Visit our <a href="support.html" style="color: var(--icon-blue-bright); text-decoration: underline;">support page</a> or check our <a href="privacy.html" style="color: var(--icon-blue-bright); text-decoration: underline;">privacy policy</a>.</p>
+      <p>Need help or have questions? Visit our <a href="support.html">support page</a> or check our <a href="privacy.html">privacy policy</a>.</p>
     </div>
-    <div class="cta-group">
-      <a href="support.html" class="btn btn-primary">Get Support</a>
+    <div class="cta-group" style="margin-bottom: 0;">
+      <a href="support.html" class="btn btn-primary">Get support</a>
       <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
     </div>
   </section>
@@ -659,5 +812,90 @@
   </div>
 </footer>
 
+<script>
+(function () {
+  // Build each layer as a stack of thin slices spanning its full physical
+  // thickness. Slice COUNT scales with thickness (not just the spacing)
+  // so consecutive slices never sit far enough apart to open a gap at
+  // steep tilt — that's what "chunky but still solid" requires.
+  var STEP_PX = 10; // max spacing between adjacent slices; keeps the stack gap-free at our rotation range
+
+  function buildStack(mount, tag, thicknessPx, extraAttrs, frontClass, sliceClass) {
+    var count = Math.max(2, Math.round(thicknessPx / STEP_PX) + 1);
+    for (var i = count - 1; i >= 0; i--) {
+      var el = document.createElement(tag);
+      el.className = sliceClass + (i === 0 ? ' ' + frontClass : '');
+      var z = -(thicknessPx * i / (count - 1));
+      var b = 1 - 0.92 * (i / (count - 1));
+      el.style.setProperty('--z', z.toFixed(2) + 'px');
+      el.style.setProperty('--b', b.toFixed(3));
+      if (extraAttrs) extraAttrs(el);
+      mount.appendChild(el);
+    }
+  }
+
+  var slabMount = document.getElementById('iconSlabMount');
+  var glyphMount = document.getElementById('iconGlyphMount');
+  if (slabMount) buildStack(slabMount, 'div', 80, null, 'icon-slab-front', 'icon-slab-slice');
+  if (glyphMount) buildStack(glyphMount, 'img', 40, function (el) {
+    el.src = 'custom_hifireceiver_fill_badge_wifi.svg';
+    el.alt = '';
+  }, 'glyph-front', 'glyph-slice');
+})();
+</script>
+<script>
+(function () {
+  var wrap = document.querySelector('.hero-icon-wrap');
+  var icon = document.getElementById('heroIcon');
+  if (!wrap || !icon) return;
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+
+  var rect = wrap.getBoundingClientRect();
+  window.addEventListener('resize', function () { rect = wrap.getBoundingClientRect(); });
+
+  var targetX = 0, targetY = 0, curX = 0, curY = 0, ticking = false;
+
+  function setTarget(clientX, clientY) {
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var dx = (clientX - cx) / (rect.width / 2);
+    var dy = (clientY - cy) / (rect.height / 2);
+    targetX = Math.max(-1, Math.min(1, dx));
+    targetY = Math.max(-1, Math.min(1, dy));
+    if (!ticking) { ticking = true; requestAnimationFrame(render); }
+  }
+
+  function render() {
+    curX += (targetX - curX) * 0.08;
+    curY += (targetY - curY) * 0.08;
+
+    // Max tilt trimmed from 16deg to 8deg: with the pivot now anchored at the
+    // background's depth (see .hero-icon-parallax transform-origin), the glyph
+    // layer's screen-space throw roughly doubled compared to the old
+    // center-pivot setup, so the angle is halved to keep it inside the frame.
+    var rotateY = curX * 12;   // turns toward the cursor left/right
+    var rotateX = curY * -12;  // and tilts up/down toward it
+
+    // Rotate the whole 3D stage as one rigid body. We do NOT hand-tune a
+    // separate translate per layer — each layer's fixed translateZ (set in
+    // CSS) is what makes it sweep a different distance across the screen
+    // for the same rotation, exactly as it would with real physical depth
+    // under a perspective camera. Closer layers naturally travel further.
+    icon.style.transform =
+      'perspective(2400px) rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
+
+    if (Math.abs(targetX - curX) > 0.001 || Math.abs(targetY - curY) > 0.001) {
+      requestAnimationFrame(render);
+    } else {
+      ticking = false;
+    }
+  }
+
+  window.addEventListener('mousemove', function (e) { setTarget(e.clientX, e.clientY); });
+  document.addEventListener('mouseleave', function () { targetX = 0; targetY = 0; if (!ticking) { ticking = true; requestAnimationFrame(render); } });
+})();
+</script>
 </body>
 </html>
