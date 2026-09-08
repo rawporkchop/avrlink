@@ -971,7 +971,7 @@
   // finishes the JS-driven opacity matches what a reduced-motion user (who
   // never runs this script) sees by default. ----
   var TUNING = {
-    desktop: { maxSwayX: 26, maxScrollY: 180, idleBob: 2.5, idleSway: 0.8,
+    desktop: { maxSwayX: 1000, maxScrollY: 1000, idleBob: 2.5, idleSway: 0.8,
                companionOffsetX: 260, companionDipY: 34, companionScale: 1.18, companionOpacity: 0.55, restOpacity: 0.16 },
     tablet:  { maxSwayX: 16, maxScrollY: 114, idleBob: 2.0, idleSway: 0.6,
                companionOffsetX: 130, companionDipY: 24, companionScale: 1.12, companionOpacity: 0.45, restOpacity: 0.16 },
@@ -1053,7 +1053,7 @@
   // the scroll — the "inertia" feel), and a faster ease when the target
   // is shrinking back toward 0 (a snappier return to center). ----
   var EASE_X_LAG = 0.010, EASE_X_RETURN = 0.045;
-  var EASE_Y_LAG = 0.021, EASE_Y_RETURN = 0.105;
+  var EASE_Y_LAG = 0.063, EASE_Y_RETURN = 0.3225;
 
   var posX = 0;
   var posY = 0;
@@ -1083,8 +1083,28 @@
     // rather than a quick jolt.
     scrollVelocity *= 0.95;
 
-    // 2. Horizontal target: instantaneous force from scroll velocity.
-    var targetSwayX = Math.max(-tuning.maxSwayX, Math.min(tuning.maxSwayX, scrollVelocity * -0.8));
+// 2. Horizontal target: cursor determines the sway direction, while
+// the amount of scroll determines how strongly it moves.
+//
+// Cursor RIGHT:
+//   scroll up/down -> sway LEFT
+//
+// Cursor LEFT:
+//   scroll up/down -> sway RIGHT
+//
+// The farther the cursor is from the icon's center, the stronger
+// the directional influence becomes.
+var cursorDirection = targetX >= 0 ? -1 : 1;
+var cursorInfluence = Math.abs(targetX);
+var swayInfluence = 3
+
+var targetSwayX = Math.max(
+  -tuning.maxSwayX,
+  Math.min(
+    tuning.maxSwayX,
+    Math.abs(scrollVelocity) * swayInfluence * cursorDirection * cursorInfluence
+  )
+);
 
     // 3. Vertical target: also an instantaneous force from scroll velocity
     // (same decaying signal as X), so the target itself returns to 0 as
