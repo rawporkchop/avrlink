@@ -352,7 +352,7 @@
   .hero-headline .phrase-part-1 {
     font-weight: 500;
     color: var(--text-muted);
-    animation-delay: 0.1s;
+    animation-delay: 0.0s;
   }
 
   /* phrase-part-2 no longer fades in as a single block — it's a plain,
@@ -376,7 +376,7 @@
 
   /* ---- Catch-phrase build sequence: "that moves" → "seamlessly" → "with
      you". Timeline (measured from page load, matching phrase-part-1's own
-     0.1s delay / 0.9s duration finishing at ~1.0s):
+     0.0s delay / 0.9s duration finishing at ~1.0s):
 
        0.0s –1.0s   phrase-part-1 settles in (existing premiumLoadIn)
        1.0s –1.5s   intentional pause — nothing new happens
@@ -397,7 +397,7 @@
 
   .hero-headline .word-moves {
     animation: wordReveal 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    animation-delay: 0.5s;
+    animation-delay: 0.3s;
   }
 
   .hero-headline .word-withyou {
@@ -822,7 +822,7 @@
         <span class="phrase-part-1">Intuitive home theater control</span>
         <span class="phrase-part-2"><span class="word-block word-moves">that moves</span> <span class="word-block word-seamlessly"><span class="seamlessly-inner">seamlessly</span></span> <span class="word-block word-withyou">with you</span></span>
       </h1>
-      <p class="hero-sub">A native companion for your receiver — no cloud account, no laggy vendor web UI, just instant control from your Mac, iPhone, or wrist.</p>
+      <p class="hero-sub">A native companion for your receiver. Instant and unified control from your Mac, iPhone, or wrist.</p>
       <div class="cta-group">
         <a href="#simulator" class="btn btn-primary">Try the simulator</a>
         <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View source on GitHub</a>
