@@ -47,11 +47,6 @@
 
   ::selection { background: var(--signal-blue-dim); color: var(--text-primary); }
 
-  @keyframes pulseSignal {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
   /* Faint edge vignette — the way rack gear looks photographed in a dim room. No color wash. */
   body::before {
     content: "";
@@ -90,15 +85,6 @@
     text-decoration: none;
   }
 
-  .signal-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background-color: var(--signal-blue);
-    box-shadow: 0 0 8px var(--signal-blue);
-    animation: pulseSignal 4s infinite ease-in-out;
-  }
-
   .nav-links {
     display: flex;
     align-items: center;
@@ -129,6 +115,9 @@
     position: relative;
     z-index: 0;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
     min-height: calc(100vh - var(--nav-height));
     min-height: calc(100dvh - var(--nav-height));
     padding: 2rem 4vw;
@@ -142,8 +131,25 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
+    text-align: left;
     max-width: 780px;
-    width: 100%;
+    flex: 0 1 780px;
+  }
+
+  /* Invisible spacer, sized to match the icon frame's own footprint, that
+     sits beside the text column purely so the flex row below can center
+     the (text + icon-shaped-space) pair as a balanced whole. The real
+     icon is a fixed, viewport-anchored element (see .hero-icon-wrap) —
+     this anchor exists only so its on-screen position can be measured
+     and used as the icon's "beside the headline" rest position, instead
+     of a guessed pixel offset that didn't stay in sync with the text
+     column's actual width or the viewport's actual size. */
+  .hero-icon-anchor {
+    flex: 0 0 auto;
+    width: clamp(240px, 32vw, 480px);
+    aspect-ratio: 1 / 1;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* The app icon, watching the cursor from the back of the hero.
@@ -320,6 +326,9 @@
   @media (max-width: 1024px) {
     .hero-icon-wrap { justify-content: center; opacity: 0.6; }
     .hero-icon-frame { width: 55vw; opacity: 0.1; overflow: hidden; }
+    .hero-container { justify-content: flex-start; gap: 0; }
+    .hero-text-column { flex: 1 1 auto; width: 100%; }
+    .hero-icon-anchor { display: none; }
   }
 
   .hero-headline {
@@ -435,7 +444,6 @@
     .hero-headline > span { animation: none; opacity: 1; transform: none; filter: none; }
     .hero-headline .word-block { opacity: 1; }
     .hero-headline .seamlessly-inner { animation: none; clip-path: none; }
-    .signal-dot { animation: none; }
   }
 
   .hero-sub {
@@ -449,6 +457,7 @@
   .cta-group {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 3rem;
@@ -492,6 +501,8 @@
 
   .platforms-strip {
     display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 2rem;
     font-size: 0.85rem;
     color: var(--text-muted);
@@ -775,7 +786,7 @@
 
   @media (max-width: 640px) {
     .support-section { flex-direction: column; align-items: flex-start; }
-    .platforms-strip { flex-direction: column; gap: 0.7rem; }
+    .platforms-strip { flex-direction: column; align-items: center; gap: 0.7rem; }
     .hero-container { min-height: calc(100dvh - var(--nav-height)); padding: 1.5rem 4vw; }
     .nav-links { gap: 1.3rem; font-size: 0.85rem; }
   }
@@ -785,7 +796,6 @@
 
 <nav>
   <a href="#" class="nav-brand">
-    <div class="signal-dot"></div>
     <span>AVR Link</span>
   </a>
   <ul class="nav-links">
@@ -823,6 +833,7 @@
         <div><span class="platform-pip"></span> watchOS Remote</div>
       </div>
     </div>
+    <div class="hero-icon-anchor" aria-hidden="true"></div>
   </section>
 
   <section class="simulator-wrapper" id="simulator">
@@ -997,6 +1008,32 @@
   var rect = wrap.getBoundingClientRect();
   window.addEventListener('resize', function () { rect = wrap.getBoundingClientRect(); });
 
+  // ---- Companion rest offset, measured from the layout instead of
+  // guessed as a fixed pixel value. .hero-icon-anchor is an invisible,
+  // icon-frame-shaped spacer sitting next to the text column; wherever
+  // the flex row actually places it (which stays centered as a
+  // text+icon group at any viewport width) is where the real icon
+  // should rest at the start of the page. Below the 1024px breakpoint
+  // the anchor is display:none (mobile/tablet keep the icon as a big
+  // centered background watermark instead), so we fall back to the
+  // tuning object's fixed value there. ----
+  var anchorEl = document.querySelector('.hero-icon-anchor');
+  var anchorOffsetX = 0;
+  var usingAnchorOffset = false;
+
+  function computeAnchorOffset() {
+    if (anchorEl && window.getComputedStyle(anchorEl).display !== 'none') {
+      var anchorRect = anchorEl.getBoundingClientRect();
+      anchorOffsetX = (anchorRect.left + anchorRect.width / 2) - (window.innerWidth / 2);
+      usingAnchorOffset = true;
+    } else {
+      usingAnchorOffset = false;
+    }
+  }
+
+  computeAnchorOffset();
+  window.addEventListener('resize', computeAnchorOffset);
+
   // ---- Companion "recognize → pull back → accelerate → overshoot →
   // settle" curve. This is the classic animation anticipation/overshoot
   // shape (an easeInOutBack), applied to the companion→background
@@ -1153,7 +1190,8 @@ var targetSwayX = Math.max(
     var opacityEase = 1 - Math.pow(1 - companionProgress, 3);
     var opacityRemaining = 1 - opacityEase;
 
-    var companionX = tuning.companionOffsetX * r;
+    var companionRestOffsetX = usingAnchorOffset ? anchorOffsetX : tuning.companionOffsetX;
+    var companionX = companionRestOffsetX * r;
     var companionDip = tuning.companionDipY * r;
     var companionScaleAmt = 1 + (tuning.companionScale - 1) * r;
     var frameOpacity = tuning.restOpacity + (tuning.companionOpacity - tuning.restOpacity) * opacityRemaining;
