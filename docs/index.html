@@ -795,59 +795,28 @@
 
 
 <style id="device-aware-app-promo">
+  .device-app-cta {
+    display: inline-flex;
+    align-items: center;
+  }
+
   .mac-app-cta {
     display: none;
     flex: 0 0 auto;
     line-height: 0;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mac-app-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--signal-blue-dim);
   }
 
   .mac-app-cta img {
     display: block;
     width: 190px;
     height: auto;
-  }
-
-  .device-app-promo {
-    margin: 4rem auto 0;
-    max-width: 1180px;
-    padding: 0 1.5rem;
-  }
-
-  .device-app-promo-inner {
-    padding: 2.25rem;
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: 24px;
-    background: rgba(255,255,255,.045);
-    box-shadow: 0 16px 50px rgba(0,0,0,.18);
-  }
-
-  .device-app-eyebrow {
-    display: block;
-    margin-bottom: .45rem;
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    opacity: .62;
-  }
-
-  .device-app-promo h2 {
-    margin: 0 0 .5rem;
-  }
-
-  .device-app-message {
-    margin: 0;
-    max-width: 720px;
-    opacity: .72;
-    line-height: 1.55;
-  }
-
-  .device-app-actions {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    margin-top: 1.25rem;
-    flex-wrap: wrap;
   }
 
   /* The native Apple Smart App Banner handles iPhone/iPad.
@@ -865,12 +834,6 @@
     display: inline-flex;
   }
 
-  /* Non-Mac desktop keeps the ordinary App Store link. */
-  @media (max-width: 700px) {
-    .device-app-promo-inner {
-      padding: 1.5rem;
-    }
-  }
 </style>
 
 </head>
@@ -1322,27 +1285,6 @@ var targetSwayX = Math.max(
   requestAnimationFrame(render);
 })();
 </script>
-
-<!-- Device-aware app + support promotion -->
-<section class="device-app-promo" aria-label="AVR Link app and support">
-  <div class="device-app-promo-inner">
-    <div class="device-app-promo-copy">
-      <span class="device-app-eyebrow">AVR Link</span>
-      <h2>Control your receiver, wherever you are.</h2>
-      <p class="device-app-message">
-        Get AVR Link for your Apple device, or get help with setup and support.
-      </p>
-      <div class="device-app-actions">
-        <a class="btn btn-primary device-promo-app-link"
-           href="https://apps.apple.com/us/app/avr-link/id6807123807"
-           target="_blank" rel="noopener">Get AVR Link</a>
-        <a class="btn btn-secondary"
-           href="support.html">Get support</a>
-      </div>
-    </div>
-  </div>
-</section>
-
 
 <script id="device-aware-app-detection">
 (function () {
