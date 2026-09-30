@@ -3,6 +3,7 @@
 <head>
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-itunes-app" content="app-id=6807123807">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVR Link — Seamless AV Receiver Control</title>
@@ -791,6 +792,87 @@
     .nav-links { gap: 1.3rem; font-size: 0.85rem; }
   }
 </style>
+
+
+<style id="device-aware-app-promo">
+  .mac-app-cta {
+    display: none;
+    flex: 0 0 auto;
+    line-height: 0;
+  }
+
+  .mac-app-cta img {
+    display: block;
+    width: 190px;
+    height: auto;
+  }
+
+  .device-app-promo {
+    margin: 4rem auto 0;
+    max-width: 1180px;
+    padding: 0 1.5rem;
+  }
+
+  .device-app-promo-inner {
+    padding: 2.25rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 24px;
+    background: rgba(255,255,255,.045);
+    box-shadow: 0 16px 50px rgba(0,0,0,.18);
+  }
+
+  .device-app-eyebrow {
+    display: block;
+    margin-bottom: .45rem;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .62;
+  }
+
+  .device-app-promo h2 {
+    margin: 0 0 .5rem;
+  }
+
+  .device-app-message {
+    margin: 0;
+    max-width: 720px;
+    opacity: .72;
+    line-height: 1.55;
+  }
+
+  .device-app-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  /* The native Apple Smart App Banner handles iPhone/iPad.
+     Hide the redundant custom app CTA there, but retain support below. */
+  html.device-ios .device-promo-app-link {
+    display: none;
+  }
+
+  /* macOS: the hero CTA uses Apple's Mac App Store badge. */
+  html.device-macos .app-store-cta {
+    display: none;
+  }
+
+  html.device-macos .mac-app-cta {
+    display: inline-flex;
+  }
+
+  /* Non-Mac desktop keeps the ordinary App Store link. */
+  @media (max-width: 700px) {
+    .device-app-promo-inner {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
 </head>
 <body>
 
@@ -825,7 +907,18 @@
       <p class="hero-sub">A native companion for your receiver. Instant and unified control from your Mac, iPhone, or wrist.</p>
       <div class="cta-group">
         <a href="#simulator" class="btn btn-primary">Try the simulator</a>
-        <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View source on GitHub</a>
+        <span class="device-app-cta">
+  <a class="btn btn-secondary app-store-cta"
+     href="https://apps.apple.com/us/app/avr-link/id6807123807"
+     target="_blank" rel="noopener">View on the App Store</a>
+  <a class="mac-app-cta"
+     href="https://apps.apple.com/us/app/avr-link/id6807123807"
+     target="_blank" rel="noopener"
+     aria-label="Download AVR Link on the Mac App Store">
+    <img src="https://tools.applemediaservices.com/api/badges/download-on-the-mac-app-store/black/en-us?size=250x83"
+         alt="Download on the Mac App Store">
+  </a>
+</span>
       </div>
       <div class="platforms-strip">
         <div><span class="platform-pip"></span> macOS Menu Bar</div>
@@ -836,7 +929,8 @@
     <div class="hero-icon-anchor" aria-hidden="true"></div>
   </section>
 
-  <section class="simulator-wrapper" id="simulator">
+  
+<section class="simulator-wrapper" id="simulator">
     <div class="simulator-frame-container">
       <div class="simulator-header-bar">AVR Link Simulator</div>
       <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
@@ -850,11 +944,11 @@
   <section class="feature-showcase-section" id="showcase">
     <div class="feature-text-content">
       <h2 class="feature-title">Volume control, down to one gesture.</h2>
-      <p class="feature-caption">AVR Link's ScrubHud lives quietly in your menu bar until you need it — then it's one drag away.</p>
+      <p class="feature-caption">AVR Link's ScrubHud lives quietly in your menu bar until you need it. It shouldn't be a hassle to listen to music.</p>
       <ul class="feature-bullets">
         <li>Hold and drag anywhere in the menu bar to open the ScrubHud and adjust the Main zone's volume instantly.</li>
         <li>Turn on Open at Login and it's already running by the time you sit down to listen.</li>
-        <li>One app follows you across Mac, iPhone, and Apple Watch — no per-platform relearning.</li>
+        <li>One app follows you across Mac, iPhone, and Apple Watch. A unified platform for your high-end receiver.</li>
       </ul>
     </div>
     <div class="feature-media-container">
@@ -901,7 +995,7 @@
     </div>
     <div class="cta-group" style="margin-bottom: 0;">
       <a href="support.html" class="btn btn-primary">Get support</a>
-      <a href="https://github.com/rawporkchop/AVR-Link" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+      <a href="https://apps.apple.com/us/app/avr-link/id6807123807" class="btn btn-secondary" target="_blank" rel="noopener">View on the App Store</a>
     </div>
   </section>
 </main>
@@ -1228,5 +1322,44 @@ var targetSwayX = Math.max(
   requestAnimationFrame(render);
 })();
 </script>
+
+<!-- Device-aware app + support promotion -->
+<section class="device-app-promo" aria-label="AVR Link app and support">
+  <div class="device-app-promo-inner">
+    <div class="device-app-promo-copy">
+      <span class="device-app-eyebrow">AVR Link</span>
+      <h2>Control your receiver, wherever you are.</h2>
+      <p class="device-app-message">
+        Get AVR Link for your Apple device, or get help with setup and support.
+      </p>
+      <div class="device-app-actions">
+        <a class="btn btn-primary device-promo-app-link"
+           href="https://apps.apple.com/us/app/avr-link/id6807123807"
+           target="_blank" rel="noopener">Get AVR Link</a>
+        <a class="btn btn-secondary"
+           href="support.html">Get support</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script id="device-aware-app-detection">
+(function () {
+  const ua = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  const isMac =
+    /Macintosh|Mac OS X/.test(ua) &&
+    !isIOS;
+
+  document.documentElement.classList.toggle("device-ios", isIOS);
+  document.documentElement.classList.toggle("device-macos", isMac);
+})();
+</script>
+
 </body>
 </html>
