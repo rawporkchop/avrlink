@@ -522,29 +522,104 @@
     background: var(--signal-copper);
   }
 
-  /* Simulator */
+  /* Simulator — styled like a real macOS window */
   .simulator-wrapper {
     padding: 2rem 4vw 6rem;
   }
 
   .simulator-frame-container {
-    background: var(--panel);
-    border: 1px solid var(--hairline-strong);
-    border-radius: 10px;
+    background: #1b1b1d;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6),
+                0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    will-change: transform;
+  }
+
+  .simulator-frame-container.is-dragging {
+    transition: opacity 0.22s ease;
+    cursor: grabbing;
+  }
+
+  .simulator-frame-container.is-hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .simulator-header-bar {
-    background: var(--panel-elevated);
-    padding: 0.85rem 1.5rem;
-    border-bottom: 1px solid var(--hairline);
+    position: relative;
+    height: 38px;
+    padding: 0 18px;
+    background: linear-gradient(to bottom, #2d2d30 0%, #252527 100%);
+    border-bottom: none;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-size: 0.85rem;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
+    justify-content: center;
+    color: #d7d7da;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    user-select: none;
+  }
+
+  .simulator-window-controls {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 12px;
+  }
+
+  .simulator-window-control {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    flex: 0 0 12px;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.28),
+                0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  }
+
+  .simulator-window-control.close { background: #ff5f57; }
+  .simulator-window-control.minimize { background: #febc2e; }
+  .simulator-window-control.maximize { background: #28c840; }
+
+  .simulator-window-control::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(40, 40, 40, 0.78);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0;
+  }
+
+  .simulator-window-control.close::after { content: "×"; font-size: 10px; }
+  .simulator-window-control.minimize::after { content: "−"; font-size: 10px; }
+  .simulator-window-control.maximize::after { content: "↗"; font-size: 8px; }
+
+  .simulator-window-controls:hover .simulator-window-control::after,
+  .simulator-window-control:focus-visible::after {
+    opacity: 1;
+  }
+
+  .simulator-window-control:focus-visible {
+    outline: 2px solid rgba(77, 163, 224, 0.85);
+    outline-offset: 2px;
   }
 
   .simulator-iframe {
@@ -558,9 +633,9 @@
   }
 
   .simulator-footer-bar {
-    background: var(--panel);
+    background: #1d1d1f;
     padding: 0.85rem 1.5rem;
-    border-top: 1px solid var(--hairline);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -712,7 +787,7 @@
   /* Support banner */
   .support-section {
     padding: 6rem 4vw;
-    border-top: 1px solid var(--hairline);
+    border-top: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -893,8 +968,15 @@
 
   
 <section class="simulator-wrapper" id="simulator">
-    <div class="simulator-frame-container">
-      <div class="simulator-header-bar">AVR Link Simulator</div>
+    <div class="simulator-frame-container" id="simulatorWindow">
+      <div class="simulator-header-bar">
+        <div class="simulator-window-controls" role="group" aria-label="Simulator window controls">
+          <button class="simulator-window-control close" type="button" aria-label="Close simulator"></button>
+          <button class="simulator-window-control minimize" type="button" aria-label="Minimize simulator"></button>
+          <button class="simulator-window-control maximize" type="button" aria-label="Open simulator fullscreen"></button>
+        </div>
+        <span>AVR Link Simulator</span>
+      </div>
       <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
       <div class="simulator-footer-bar">
         <span>Direct preview mode</span>
@@ -971,6 +1053,77 @@
   </div>
 </footer>
 
+<script>
+(function () {
+  var simulatorWindow = document.getElementById('simulatorWindow');
+  if (!simulatorWindow) return;
+
+  var closeButton = simulatorWindow.querySelector('.simulator-window-control.close');
+  var minimizeButton = simulatorWindow.querySelector('.simulator-window-control.minimize');
+  var maximizeButton = simulatorWindow.querySelector('.simulator-window-control.maximize');
+  var headerBar = simulatorWindow.querySelector('.simulator-header-bar');
+
+  function hideSimulator() {
+    simulatorWindow.classList.add('is-hidden');
+  }
+
+  function openFullscreenSimulator() {
+    window.open('web_preview.html', '_blank', 'noopener');
+  }
+
+  closeButton.addEventListener('click', hideSimulator);
+  minimizeButton.addEventListener('click', hideSimulator);
+  maximizeButton.addEventListener('click', openFullscreenSimulator);
+
+  // Drag the simulator window by its title bar without removing it from
+  // document flow. A transform moves the window visually while its original
+  // layout box remains in place, so the page never collapses around it.
+  // Because the transform is relative to the document-flow position (rather
+  // than viewport-fixed coordinates), normal page scrolling does not make the
+  // simulator follow the viewport like a parallax/overlay element.
+  var dragging = false;
+  var startX = 0;
+  var startY = 0;
+  var offsetX = 0;
+  var offsetY = 0;
+
+  headerBar.addEventListener('pointerdown', function (event) {
+    if (event.target.closest('.simulator-window-control')) return;
+
+    dragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    headerBar.setPointerCapture(event.pointerId);
+    simulatorWindow.classList.add('is-dragging');
+    headerBar.style.cursor = 'grabbing';
+  });
+
+  headerBar.addEventListener('pointermove', function (event) {
+    if (!dragging) return;
+
+    offsetX += event.clientX - startX;
+    offsetY += event.clientY - startY;
+    startX = event.clientX;
+    startY = event.clientY;
+
+    simulatorWindow.style.transform =
+      'translate3d(' + offsetX + 'px, ' + offsetY + 'px, 0)';
+  });
+
+  function stopDragging(event) {
+    if (!dragging) return;
+    dragging = false;
+    simulatorWindow.classList.remove('is-dragging');
+    headerBar.style.cursor = '';
+    if (event.pointerId !== undefined) {
+      try { headerBar.releasePointerCapture(event.pointerId); } catch (_) {}
+    }
+  }
+
+  headerBar.addEventListener('pointerup', stopDragging);
+  headerBar.addEventListener('pointercancel', stopDragging);
+})();
+</script>
 <script>
 (function () {
   // Build each layer as a stack of thin slices spanning its full physical
