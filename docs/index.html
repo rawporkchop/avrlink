@@ -2401,6 +2401,14 @@ var targetSwayX = Math.max(
 
       function toggle() {
         var expanded = card.getAttribute('aria-expanded') === 'true';
+
+        // Keep the catalog output to one expanded card at a time.
+        if (!expanded) {
+          list.querySelectorAll('.compatibility-result[aria-expanded="true"]').forEach(function (openCard) {
+            openCard.setAttribute('aria-expanded', 'false');
+          });
+        }
+
         card.setAttribute('aria-expanded', String(!expanded));
       }
 
