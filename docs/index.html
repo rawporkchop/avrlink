@@ -324,6 +324,11 @@
     .hero-icon-parallax { transition: none; }
   }
 
+  @media (hover: none) {
+    .ecosystem-card:hover::after { background: rgba(8, 10, 12, 0.62); }
+    .ecosystem-card:hover .ecosystem-card-copy { opacity: 1; transform: none; pointer-events: auto; }
+  }
+
   @media (max-width: 1024px) {
     .hero-icon-wrap { justify-content: center; opacity: 0.6; }
     .hero-icon-frame { width: 55vw; opacity: 0.1; overflow: hidden; }
@@ -714,69 +719,168 @@
     display: block;
   }
 
-  /* Ecosystem — one channel strip, not three floating cards */
+  /* Ecosystem — device showcase */
   .ecosystem-section {
     padding: 7rem 4vw;
     border-top: 1px solid var(--hairline);
   }
 
-  .section-header {
-    margin-bottom: 3.5rem;
+  .ecosystem-section .section-header {
+    margin-bottom: 3rem;
     max-width: 60ch;
   }
 
-  .section-title {
+  .ecosystem-section .section-title {
     font-family: var(--font-display);
-    font-size: clamp(1.9rem, 3.2vw, 2.8rem);
+    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
     font-weight: 700;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.025em;
+    line-height: 1.02;
+    margin-bottom: 1rem;
   }
 
-  .ecosystem-strip {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr 1fr;
-    border: 1px solid var(--hairline-strong);
-    border-radius: 10px;
-    background: var(--panel);
-    overflow: hidden;
-  }
-
-  .ecosystem-column {
-    padding: 2.75rem 2.25rem;
-    border-left: 1px solid var(--hairline);
-    border-top: 2px solid transparent;
-  }
-
-  .ecosystem-column:first-child { border-left: none; }
-
-  .ecosystem-column.primary { border-top-color: var(--signal-blue); }
-
-  .card-platform-tag {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--signal-copper);
-    margin-bottom: 1.75rem;
-  }
-
-  .ecosystem-column.primary .card-platform-tag { color: var(--signal-blue); }
-
-  .card-icon {
-    font-size: 1.9rem;
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
-  }
-
-  .card-title {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.85rem;
-  }
-
-  .card-body {
+  .ecosystem-intro {
+    max-width: 48rem;
     color: var(--text-muted);
-    font-size: 0.96rem;
+    font-size: 1.02rem;
+    line-height: 1.65;
+  }
+
+  .ecosystem-showcase {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ecosystem-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    background: var(--chassis);
+    isolation: isolate;
+    cursor: default;
+  }
+
+  /* The image is the card. The overlay keeps the copy readable until hover. */
+  .ecosystem-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: rgba(8, 10, 12, 0.62);
+    transition: background 260ms ease;
+  }
+
+  .ecosystem-card:hover::after {
+    background: rgba(8, 10, 12, 0);
+  }
+
+  .ecosystem-card.mac {
+    border-top: 2px solid var(--signal-blue);
+  }
+
+  .ecosystem-card-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 30rem;
+    padding: 3rem;
+    transition: opacity 220ms ease, transform 260ms ease;
+  }
+
+  .ecosystem-card:hover .ecosystem-card-copy {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+  }
+
+  .ecosystem-card .card-platform-tag {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--signal-blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ecosystem-card h3 {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 2.7vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .ecosystem-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.98rem;
     line-height: 1.6;
+  }
+
+  .ecosystem-device-image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: var(--chassis);
+  }
+
+  .ecosystem-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .ecosystem-card-column {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ecosystem-card.secondary {
+    /* Height is derived from each image's intrinsic aspect ratio. */
+  }
+
+  .ecosystem-card.secondary .ecosystem-card-copy {
+    padding: 2.5rem;
+  }
+
+  .ecosystem-card.secondary .card-platform-tag {
+    color: var(--signal-copper);
+  }
+
+  .ecosystem-card.iphone .ecosystem-device-image,
+  .ecosystem-card.ipad .ecosystem-device-image {
+    object-position: center;
+  }
+
+  /* Fills the leftover height beneath the shorter image in the secondary row.
+     Uses the same blue → neutral → copper signal gradient as the hero "you." */
+  .ecosystem-filler {
+    opacity: 0.9;
+    position: relative;
+    width: 100%;
+    height: 0;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(90deg, var(--signal-blue) 0%, var(--text-muted) 50%, var(--signal-copper) 100%);
+    pointer-events: none;
+  }
+
+  .ecosystem-filler::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 10, 12, 0.62);
   }
 
 
@@ -853,19 +957,94 @@
 
 .compatibility-result-list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
     gap: 0.7rem;
   }
 
+  @media (max-width: 640px) {
+    .compatibility-result-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+.compatibility-results-heading {
+    margin-bottom: 0.85rem;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
 .compatibility-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    position: relative;
+    display: block;
     padding: 1rem 1.1rem;
     border: 1px solid var(--hairline);
     border-radius: 8px;
     background: var(--panel);
+    cursor: pointer;
+    overflow: visible;
+  }
+
+.compatibility-result[aria-expanded="true"] {
+    z-index: 10;
+  }
+
+.compatibility-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+.compatibility-result-name {
+    min-width: 0;
+  }
+
+.compatibility-result-chevron {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: transform 180ms ease;
+  }
+
+.compatibility-result[aria-expanded="true"] .compatibility-result-chevron {
+    transform: rotate(180deg);
+  }
+
+.compatibility-result-details {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.7rem);
+    left: 0;
+    right: 0;
+    padding: 0.95rem 1.1rem 1rem;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: var(--chassis);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+    z-index: 20;
+  }
+
+.compatibility-result[aria-expanded="true"] .compatibility-result-details {
+    display: block;
+  }
+
+.compatibility-result-detail {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+.compatibility-result-detail + .compatibility-result-detail {
+    margin-top: 0.5rem;
+  }
+
+.compatibility-result-detail-label {
+    color: var(--text-primary);
+    font-weight: 700;
   }
 
 .compatibility-result-model {
@@ -875,12 +1054,15 @@
   }
 
 .compatibility-result-brand {
-    flex: 0 0 auto;
-    color: var(--text-muted);
-    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  }
+
+.compatibility-result-brand.denon {
+    color: var(--signal-blue);
+  }
+
+.compatibility-result-brand.marantz {
+    color: var(--signal-copper);
   }
 
 .compatibility-empty {
@@ -1066,19 +1248,149 @@
       padding: 5rem 6vw;
     }
     .feature-media-container { justify-self: center; }
-    .ecosystem-strip { grid-template-columns: 1fr; }
-    .ecosystem-column { border-left: none; border-top: 1px solid var(--hairline); }
-    .ecosystem-column:first-child { border-top: none; }
-    .ecosystem-column.primary { border-top: 2px solid var(--signal-blue); }
+    .ecosystem-card.mac .ecosystem-card-copy { padding: 2.5rem; }
+    .ecosystem-secondary { grid-template-columns: 1fr; }
     .simulator-iframe { height: 60vh; min-height: 450px; }
   }
 
   @media (max-width: 640px) {
     .support-section { flex-direction: column; align-items: flex-start; }
+    .ecosystem-section { padding: 5rem 4vw; }
+    .ecosystem-section .section-header { margin-bottom: 2.25rem; }
+    .ecosystem-card.mac .ecosystem-card-copy { padding: 2rem 1.75rem; }
+    .ecosystem-card.secondary .ecosystem-card-copy { padding: 2rem 1.75rem; }
     .platforms-strip { flex-direction: column; align-items: center; gap: 0.7rem; }
     .hero-container { min-height: calc(100dvh - var(--nav-height)); padding: 1.5rem 4vw; }
     .nav-links { gap: 1.3rem; font-size: 0.85rem; }
   }
+
+  /* Simulator + guided CTA */
+  .simulator-wrapper {
+    padding: 7rem 6vw;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-section-inner {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(280px, 0.95fr);
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .simulator-guide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .simulator-eyebrow {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin-bottom: 1rem;
+  }
+
+  .simulator-guide-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+  }
+
+  .simulator-guide-intro {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 34ch;
+    margin: 0 0 2rem;
+  }
+
+  .simulator-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .simulator-steps li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .simulator-step-number {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding-top: 0.15rem;
+  }
+
+  .simulator-steps strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .simulator-steps p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .simulator-guide-cta {
+    margin-top: 2.2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-guide-cta p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .simulator-guide-cta .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  @media (max-width: 1024px) {
+    .simulator-section-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    .simulator-guide {
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .simulator-wrapper {
+      padding: 5rem 4vw;
+    }
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+    .simulator-guide-title {
+      font-size: 2rem;
+    }
+  }
+
 </style>
 
 
@@ -1122,6 +1434,134 @@
     display: inline-flex;
   }
 
+
+  /* Simulator + guided CTA */
+  .simulator-wrapper {
+    padding: 7rem 6vw;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-section-inner {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(280px, 0.95fr);
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .simulator-guide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .simulator-eyebrow {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin-bottom: 1rem;
+  }
+
+  .simulator-guide-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+  }
+
+  .simulator-guide-intro {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 34ch;
+    margin: 0 0 2rem;
+  }
+
+  .simulator-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .simulator-steps li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .simulator-step-number {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding-top: 0.15rem;
+  }
+
+  .simulator-steps strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .simulator-steps p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .simulator-guide-cta {
+    margin-top: 2.2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-guide-cta p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .simulator-guide-cta .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  @media (max-width: 1024px) {
+    .simulator-section-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    .simulator-guide {
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .simulator-wrapper {
+      padding: 5rem 4vw;
+    }
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+    .simulator-guide-title {
+      font-size: 2rem;
+    }
+  }
+
 </style>
 
 </head>
@@ -1155,7 +1595,7 @@
         <span class="phrase-part-1">Your AVR.</span>
         <span class="phrase-part-2"><span class="word-block word-moves">It follows</span> <span class="word-block word-seamlessly"><span class="seamlessly-inner">you.</span></span></span>
       </h1>
-      <p class="hero-sub">Control your Denon or Marantz receiver from your Mac, iPhone, and Apple Watch — without reaching for the remote.</p>
+      <p class="hero-sub">Control your Denon or Marantz receiver from your Mac, iPhone, and Apple Watch without reaching for the remote.</p>
       <div class="cta-group">
         <a href="#simulator" class="btn btn-primary">Try the simulator</a>
         <span class="device-app-cta">
@@ -1180,23 +1620,7 @@
   </section>
 
   
-<section class="simulator-wrapper" id="simulator">
-    <div class="simulator-frame-container" id="simulatorWindow">
-      <div class="simulator-header-bar">
-        <div class="simulator-window-controls" role="group" aria-label="Simulator window controls">
-          <button class="simulator-window-control close" type="button" aria-label="Close simulator"></button>
-          <button class="simulator-window-control minimize" type="button" aria-label="Minimize simulator"></button>
-          <button class="simulator-window-control maximize" type="button" aria-label="Open simulator fullscreen"></button>
-        </div>
-        <span>AVR Link Simulator</span>
-      </div>
-      <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
-      <div class="simulator-footer-bar">
-        <span>Direct preview mode</span>
-        <a href="web_preview.html" target="_blank" rel="noopener">Open fullscreen ↗</a>
-      </div>
-    </div>
-  </section>
+
 
   <section class="feature-showcase-section" id="showcase">
     <div class="feature-text-content">
@@ -1218,35 +1642,94 @@
 
   <section class="ecosystem-section" id="ecosystem">
     <div class="section-header">
-      <h2 class="section-title">One receiver. Three ways to reach it.</h2>
+      <h2 class="section-title">One receiver.<br>Every screen.</h2>
+      <p class="ecosystem-intro">Your theater follows you across the Apple devices you already use.</p>
     </div>
 
-    <div class="ecosystem-strip">
-      <div class="ecosystem-column primary">
-        <span class="card-platform-tag">macOS</span>
-        <div class="card-icon">⌘</div>
-        <h3 class="card-title">Menu Bar</h3>
-        <p class="card-body">A compact desktop utility resting in your status bar. Mix volume fluidly using an AppKit-powered scrub HUD with integrated desktop blurs.</p>
-      </div>
+    <div class="ecosystem-showcase">
+      <article class="ecosystem-card mac">
+        <div class="ecosystem-card-copy">
+          <span class="card-platform-tag">macOS</span>
+          <h3>Full control from your desktop.</h3>
+          <p>Keep your receiver within reach from the menu bar, with fast volume control and a native desktop experience.</p>
+        </div>
+        <img class="ecosystem-device-image" src="images/mac.jpg" alt="AVR Link on Mac">
+      </article>
 
-      <div class="ecosystem-column">
-        <span class="card-platform-tag">iOS</span>
-        <div class="card-icon">◱</div>
-        <h3 class="card-title">Companion</h3>
-        <p class="card-body">Complete remote parity with Home Screen widgets, Lock Screen status indicators, Control Center items, and native hardware button integration.</p>
-      </div>
+      <div class="ecosystem-secondary">
+        <div class="ecosystem-card-column">
+          <article class="ecosystem-card secondary iphone">
+            <div class="ecosystem-card-copy">
+              <span class="card-platform-tag">iPhone</span>
+              <h3>Your remote, wherever you are.</h3>
+              <p>Bring complete receiver control with you, from the room to the couch.</p>
+            </div>
+            <img class="ecosystem-device-image" src="images/iphone.jpg" alt="AVR Link on iPhone">
+          </article>
+        </div>
 
-      <div class="ecosystem-column">
-        <span class="card-platform-tag">watchOS</span>
-        <div class="card-icon">◐</div>
-        <h3 class="card-title">Remote</h3>
-        <p class="card-body">A sleek wrist controller leveraging the Digital Crown for volume adjustments, mirroring status via direct iPhone background relays.</p>
+        <div class="ecosystem-card-column">
+          <article class="ecosystem-card secondary ipad">
+            <div class="ecosystem-card-copy">
+              <span class="card-platform-tag">iPad</span>
+              <h3>More room. More control.</h3>
+              <p>A larger canvas for your theater, with the same familiar AVR Link controls.</p>
+            </div>
+            <img class="ecosystem-device-image" src="images/ipad.jpg" alt="AVR Link on iPad">
+          </article>
+        </div>
       </div>
     </div>
   </section>
 
 
-  <section class="compatibility-section" id="compatibility">
+  <section class="simulator-wrapper" id="simulator">
+  <div class="simulator-section-inner">
+    <div class="simulator-frame-container" id="simulatorWindow">
+      <div class="simulator-header-bar">
+        <div class="simulator-window-controls" role="group" aria-label="Simulator window controls">
+          <button class="simulator-window-control close" type="button" aria-label="Close simulator"></button>
+          <button class="simulator-window-control minimize" type="button" aria-label="Minimize simulator"></button>
+          <button class="simulator-window-control maximize" type="button" aria-label="Open simulator fullscreen"></button>
+        </div>
+        <span>AVR Link Simulator</span>
+      </div>
+      <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
+      <div class="simulator-footer-bar">
+        <span>Direct preview mode</span>
+        <a href="web_preview.html" target="_blank" rel="noopener">Open fullscreen ↗</a>
+      </div>
+    </div>
+
+    <aside class="simulator-guide">
+      <span class="simulator-eyebrow">TRY IT YOURSELF</span>
+      <h2 class="simulator-guide-title">Control your receiver.</h2>
+      <p class="simulator-guide-intro">This is the same interface you’ll use in AVR Link. Take a moment to explore it.</p>
+
+      <ol class="simulator-steps">
+        <li>
+          <span class="simulator-step-number">01</span>
+          <div><strong>Choose an input</strong><p>Switch between your receiver’s available sources.</p></div>
+        </li>
+        <li>
+          <span class="simulator-step-number">02</span>
+          <div><strong>Adjust the volume</strong><p>Try the volume controls and see how the interface responds.</p></div>
+        </li>
+        <li>
+          <span class="simulator-step-number">03</span>
+          <div><strong>Explore the controls</strong><p>Look around the interface and discover what’s available.</p></div>
+        </li>
+      </ol>
+
+      <div class="simulator-guide-cta">
+        <p>Like what you see?</p>
+        <a href="https://apps.apple.com/us/app/avr-link/id6807123807" class="btn btn-primary" target="_blank" rel="noopener">Download AVR Link <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="compatibility-section" id="compatibility">
     <div class="compatibility-intro">
       <div class="section-header" style="margin-bottom: 0;">
         <h2 class="section-title">Is your AVR supported?</h2>
@@ -1722,7 +2205,7 @@ var targetSwayX = Math.max(
 <script>
 (function () {
   // Change this value to control how many suggestions the search displays.
-  var MAX_COMPATIBILITY_RESULTS = 4;
+  var MAX_COMPATIBILITY_RESULTS = 6;
   var COMPATIBILITY_CSV = 'compatibility.csv';
 
   var input = document.getElementById('compatibilitySearch');
@@ -1857,27 +2340,89 @@ var targetSwayX = Math.max(
       return;
     }
 
+    var heading = null;
+
+    if (matches.length > 1) {
+      heading = document.createElement('div');
+      heading.className = 'compatibility-results-heading';
+      heading.textContent = 'Compatible receivers:';
+    }
+
     var list = document.createElement('div');
     list.className = 'compatibility-result-list';
 
     matches.forEach(function (entry) {
       var card = document.createElement('div');
       card.className = 'compatibility-result';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-expanded', 'false');
+
+      var header = document.createElement('div');
+      header.className = 'compatibility-result-header';
+
+      var name = document.createElement('div');
+      name.className = 'compatibility-result-name';
+
+      var brand = document.createElement('span');
+      brand.className = 'compatibility-result-brand ' + entry.item.brand.toLowerCase();
+      brand.textContent = entry.item.brand;
 
       var model = document.createElement('span');
       model.className = 'compatibility-result-model';
-      model.textContent = entry.item.model;
+      model.textContent = ' ' + entry.item.model;
 
-      var brand = document.createElement('span');
-      brand.className = 'compatibility-result-brand';
-      brand.textContent = entry.item.brand;
+      name.appendChild(brand);
+      name.appendChild(model);
 
-      card.appendChild(model);
-      card.appendChild(brand);
+      var chevron = document.createElement('span');
+      chevron.className = 'compatibility-result-chevron';
+      chevron.textContent = '⌄';
+      chevron.setAttribute('aria-hidden', 'true');
+
+      header.appendChild(name);
+      header.appendChild(chevron);
+
+      var details = document.createElement('div');
+      details.className = 'compatibility-result-details';
+
+      var tested = document.createElement('p');
+      tested.className = 'compatibility-result-detail';
+      tested.innerHTML = '<span class="compatibility-result-detail-label">Tested on:</span> ' + escapeHTML(entry.item.version || 'Not specified');
+
+      var notes = document.createElement('p');
+      notes.className = 'compatibility-result-detail';
+      notes.innerHTML = '<span class="compatibility-result-detail-label">Notes:</span> ' + escapeHTML(entry.item.notes || 'No additional notes.');
+
+      details.appendChild(tested);
+      details.appendChild(notes);
+      card.appendChild(header);
+      card.appendChild(details);
+
+      function toggle() {
+        var expanded = card.getAttribute('aria-expanded') === 'true';
+        card.setAttribute('aria-expanded', String(!expanded));
+      }
+
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggle();
+        }
+      });
+
       list.appendChild(card);
     });
 
-    results.replaceChildren(list);
+    if (matches.length > 1) {
+      var heading = document.createElement('div');
+      heading.className = 'compatibility-results-heading';
+      heading.textContent = 'Compatible receivers:';
+      results.replaceChildren(heading, list);
+    } else {
+      results.replaceChildren(list);
+    }
   }
 
   input.addEventListener('input', function () {
@@ -1898,6 +2443,8 @@ var targetSwayX = Math.max(
       });
       var brandIndex = headers.indexOf('brand');
       var modelIndex = headers.indexOf('model');
+      var versionIndex = headers.indexOf('tested version');
+      var notesIndex = headers.indexOf('notes');
 
       if (brandIndex === -1 || modelIndex === -1) {
         throw new Error('compatibility.csv must contain brand and model columns');
@@ -1907,7 +2454,9 @@ var targetSwayX = Math.max(
         .map(function (row) {
           return {
             brand: (row[brandIndex] || '').trim(),
-            model: (row[modelIndex] || '').trim()
+            model: (row[modelIndex] || '').trim(),
+            version: versionIndex === -1 ? '' : (row[versionIndex] || '').trim(),
+            notes: notesIndex === -1 ? '' : (row[notesIndex] || '').trim()
           };
         })
         .filter(function (item) {
@@ -1920,6 +2469,68 @@ var targetSwayX = Math.max(
       console.error('AVR Link compatibility:', error);
       results.innerHTML = '<div class="compatibility-empty"><span>Compatibility data could not be loaded. Please try again later.</span></div>';
     });
+})();
+</script>
+<script id="ecosystem-image-sizing">
+(function () {
+  var cards = document.querySelectorAll('.ecosystem-card');
+  var secondary = document.querySelector('.ecosystem-secondary');
+
+  cards.forEach(function (card) {
+    var image = card.querySelector('.ecosystem-device-image');
+    if (!image) return;
+
+    function sizeToImage() {
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      card.style.aspectRatio = image.naturalWidth + ' / ' + image.naturalHeight;
+    }
+
+    if (image.complete) {
+      sizeToImage();
+    } else {
+      image.addEventListener('load', sizeToImage, { once: true });
+    }
+  });
+
+  function syncSecondaryFiller() {
+    if (!secondary) return;
+
+    var columns = Array.from(secondary.querySelectorAll('.ecosystem-card-column'));
+    columns.forEach(function (column) {
+      var filler = column.querySelector('.ecosystem-filler');
+      if (filler) filler.remove();
+    });
+
+    if (columns.length < 2) return;
+
+    var cardsInRow = columns.map(function (column) {
+      return column.querySelector('.ecosystem-card');
+    }).filter(Boolean);
+
+    if (cardsInRow.length < 2) return;
+
+    var maxHeight = Math.max.apply(null, cardsInRow.map(function (card) {
+      return card.getBoundingClientRect().height;
+    }));
+
+    cardsInRow.forEach(function (card, index) {
+      var difference = maxHeight - card.getBoundingClientRect().height;
+      if (difference < 1) return;
+
+      var filler = document.createElement('div');
+      filler.className = 'ecosystem-filler';
+      filler.style.height = difference + 'px';
+      columns[index].appendChild(filler);
+    });
+  }
+
+  function update() {
+    requestAnimationFrame(syncSecondaryFiller);
+  }
+
+  window.addEventListener('load', update);
+  window.addEventListener('resize', update);
+  update();
 })();
 </script>
 </body>

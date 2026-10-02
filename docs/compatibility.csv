@@ -1,6 +1,8 @@
-brand,model
-Marantz,AV 10
-Marantz,Model 40N
-Denon,AVR-X4300H
-Marantz,AV8805A
-Marantz,Cinema 50
+brand,model,tested version, notes
+Marantz,AV 10,1.1.3,This app was developed and tested on the AV 10!
+Marantz,Model 40N,1.1.3,User Tested
+Denon,AVR-X4300H,1.1.3,User Tested
+Marantz,AV8805A,1.1.3,User Tested
+Marantz,Cinema 50,1.1.3,User Tested
+Denon,AVR-S670H,1.1.3,User Tested
+Marantz,Model M1,1.1.3,User Tested
