@@ -1578,8 +1578,83 @@
 
 </style>
 
+
+<style id="mobile-desktop-notice-styles">
+  .mobile-desktop-notice {
+    position: fixed;
+    top: calc(var(--nav-height) + 1rem);
+    right: 1rem;
+    z-index: 90;
+    width: min(300px, calc(100vw - 2rem));
+    padding: 0.9rem 2.5rem 0.9rem 1rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    background: rgba(20, 22, 25, 0.88);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    transform: translate3d(var(--notice-x, 0px), var(--notice-y, 0px), 0);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    will-change: transform;
+  }
+
+  .mobile-desktop-notice strong {
+    display: block;
+    margin-bottom: 0.18rem;
+    font-size: 0.84rem;
+  }
+
+  .mobile-desktop-notice p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .mobile-desktop-notice-close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.6rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mobile-desktop-notice-close:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .mobile-desktop-notice.is-dismissed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(calc(var(--notice-x, 0px) + 24px), -8px, 0) scale(0.98);
+  }
+
+  @media (min-width: 641px) {
+    .mobile-desktop-notice { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .cta-group .btn-primary[href="#simulator"] { display: none; }
+  }
+</style>
+
 </head>
 <body>
+<div class="mobile-desktop-notice" id="mobileDesktopNotice" role="status">
+  <button class="mobile-desktop-notice-close" type="button" aria-label="Dismiss">×</button>
+  <strong>More on desktop</strong>
+  <p>The full simulator and additional interactive features are available when viewing AVR Link on a desktop.</p>
+</div>
+
 
 <nav>
   <a href="#" class="nav-brand">
@@ -2555,5 +2630,48 @@ var targetSwayX = Math.max(
   update();
 })();
 </script>
+
+<script>
+(function () {
+  var notice = document.getElementById('mobileDesktopNotice');
+  if (!notice) return;
+
+  var close = notice.querySelector('.mobile-desktop-notice-close');
+  close.addEventListener('click', function () {
+    notice.classList.add('is-dismissed');
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var targetX = 0;
+  var targetY = 0;
+  var currentX = 0;
+  var currentY = 0;
+  var raf = null;
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    notice.style.setProperty('--notice-x', currentX.toFixed(2) + 'px');
+    notice.style.setProperty('--notice-y', currentY.toFixed(2) + 'px');
+    raf = requestAnimationFrame(animate);
+  }
+
+  function move(event) {
+    var x = (event.clientX / window.innerWidth) - 0.5;
+    var y = (event.clientY / window.innerHeight) - 0.5;
+    targetX = x * 10;
+    targetY = y * 7;
+  }
+
+  window.addEventListener('pointermove', move, { passive: true });
+  raf = requestAnimationFrame(animate);
+
+  window.addEventListener('pagehide', function () {
+    if (raf) cancelAnimationFrame(raf);
+  });
+})();
+</script>
+
 </body>
 </html>

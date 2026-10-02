@@ -91,7 +91,7 @@ Marantz,SR5014,N/A,Theoretical compatibility (untested): uses the same Denon/Mar
 Marantz,SR5015,N/A,Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol
 Marantz,SR6010,N/A,"Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol; older generation, some commands may differ"
 Marantz,SR6012,N/A,"Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol; older generation, some commands may differ"
-Marantz,SR6013,N/A,"Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol; older generation, some commands may differ"
+Marantz,SR6013,N/A,User Tested
 Marantz,SR6014,N/A,Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol
 Marantz,SR6015,N/A,Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol
 Marantz,SR7010,N/A,"Theoretical compatibility (untested): uses the same Denon/Marantz telnet AVR protocol; older generation, some commands may differ"
