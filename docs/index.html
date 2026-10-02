@@ -1380,8 +1380,22 @@
   }
 
   @media (max-width: 640px) {
+    /* Hide the desktop simulator and floating hero icon on phones. */
     .simulator-wrapper {
-      padding: 5rem 4vw;
+      display: none;
+    }
+
+    .hero-icon-wrap,
+    .hero-icon-anchor {
+      display: none !important;
+    }
+
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+
+    .simulator-guide-title {
+      font-size: 2rem;
     }
     .simulator-section-inner {
       gap: 2.5rem;
