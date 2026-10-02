@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <title>What is AVR Link? — The Problem Behind the App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --chassis: #0c0d0f;
+      --panel: rgba(255,255,255,.03);
+      --panel-elevated: rgba(255,255,255,.055);
+      --hairline: rgba(255,255,255,.09);
+      --hairline-strong: rgba(255,255,255,.18);
+      --signal-blue: #4da3e0;
+      --signal-blue-dim: rgba(77,163,224,.14);
+      --signal-copper: #d98a4a;
+      --signal-copper-dim: rgba(217,138,74,.14);
+      --text-primary: #f3f1ec;
+      --text-muted: #93979d;
+      --text-dim: #55585d;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --nav-height: 72px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      background: var(--chassis);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+    }
+    body { min-height: 100vh; background: var(--chassis); }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.045), transparent 52%),
+        radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.5), transparent 62%);
+    }
+    ::selection { background: var(--signal-blue-dim); color: var(--text-primary); }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-height);
+      padding: 0 4vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(12,13,15,.86);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--hairline);
+    }
+    .nav-brand {
+      color: var(--text-primary);
+      text-decoration: none;
+      font: 700 1.05rem var(--font-display);
+    }
+    .nav-links { display:flex; gap:2rem; list-style:none; font-size:.9rem; }
+    .nav-links a { color:var(--text-muted); text-decoration:none; transition:color .2s; }
+    .nav-links a:hover { color:var(--text-primary); }
+
+    main { position:relative; z-index:1; overflow:hidden; }
+    .wrap { width:min(1180px, 90vw); margin:0 auto; }
+
+    .eyebrow {
+      display:inline-flex;
+      align-items:center;
+      gap:.6rem;
+      color:var(--signal-blue);
+      font-size:.75rem;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .eyebrow::before {
+      content:"";
+      width:22px; height:1px;
+      background:currentColor;
+    }
+    h1,h2,h3 { font-family:var(--font-display); }
+    p { line-height:1.7; color:var(--text-muted); }
+
+    .hero {
+      min-height:calc(100vh - var(--nav-height));
+      min-height:calc(100dvh - var(--nav-height));
+      display:flex;
+      align-items:center;
+      padding:7rem 0 8rem;
+      position:relative;
+    }
+    .hero-grid {
+      display:grid;
+      grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);
+      gap:6vw;
+      align-items:center;
+    }
+    .hero h1 {
+      margin-top:1.4rem;
+      max-width:800px;
+      font-size:clamp(3.2rem,7vw,6.7rem);
+      line-height:.98;
+      letter-spacing:-.045em;
+    }
+    .hero h1 .muted { color:var(--text-muted); font-weight:500; }
+    .hero h1 .gradient {
+      background:linear-gradient(90deg,var(--signal-blue),var(--text-primary) 52%,var(--signal-copper));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .hero-copy {
+      max-width:650px;
+      margin-top:2rem;
+      font-size:1.12rem;
+    }
+    .hero-aside {
+      position:relative;
+      padding:2rem;
+      border:1px solid var(--hairline-strong);
+      border-radius:14px;
+      background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+      box-shadow:0 35px 90px rgba(0,0,0,.4);
+    }
+    .hero-image {
+      padding:1rem;
+      overflow:hidden;
+    }
+    .hero-image img {
+      display:block;
+      width:100%;
+      aspect-ratio:1.28 / 1;
+      object-fit:cover;
+      object-position:center;
+      border-radius:8px;
+      background:#111;
+    }
+    .hero-image figcaption {
+      margin:.9rem .2rem .1rem;
+      color:var(--text-muted);
+      font-size:.78rem;
+      line-height:1.5;
+      text-align:center;
+    }
+
+    section { border-top:1px solid var(--hairline); }
+    .section-pad { padding:8rem 0; }
+    .section-heading { max-width:780px; margin-bottom:4rem; }
+    .section-heading h2 {
+      margin-top:1rem;
+      font-size:clamp(2.2rem,4.4vw,4.1rem);
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .section-heading p { margin-top:1.4rem; max-width:62ch; font-size:1.03rem; }
+
+    .definition-grid {
+      display:grid;
+      grid-template-columns:.8fr 1.2fr;
+      gap:5vw;
+      align-items:start;
+    }
+    .definition-large {
+      font:700 clamp(2rem,3.5vw,3.2rem)/1.12 var(--font-display);
+      letter-spacing:-.025em;
+    }
+    .definition-copy { display:grid; gap:1.4rem; }
+    .definition-copy p { max-width:65ch; }
+
+    .problem-section { background:rgba(255,255,255,.012); }
+    .problem-grid {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      border:1px solid var(--hairline-strong);
+      border-radius:12px;
+      overflow:hidden;
+      background:var(--panel);
+    }
+    .problem-card {
+      min-height:270px;
+      padding:2rem;
+      border-left:1px solid var(--hairline);
+    }
+    .problem-card:first-child { border-left:0; }
+    .problem-index { color:var(--text-dim); font:700 .75rem monospace; }
+    .problem-card h3 { margin:4rem 0 1rem; font-size:1.45rem; }
+    .problem-card p { font-size:.94rem; }
+
+    .journey {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      border:1px solid var(--hairline-strong);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .journey-side { padding:3rem; }
+    .journey-side + .journey-side { border-left:1px solid var(--hairline); }
+    .journey-label {
+      font-size:.76rem; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--text-dim);
+      margin-bottom:2rem;
+    }
+    .journey h3 { font-size:2rem; margin-bottom:1rem; }
+    .journey ul { list-style:none; display:grid; gap:1rem; margin-top:2rem; }
+    .journey li { color:var(--text-muted); line-height:1.55; padding-left:1.1rem; position:relative; }
+    .journey li::before { content:""; position:absolute; left:0; top:.65em; width:5px; height:5px; border-radius:50%; background:var(--signal-blue); }
+    .journey-side:last-child li::before { background:var(--signal-copper); }
+
+    .solution {
+      position:relative;
+    }
+    .solution-header {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:5vw;
+      align-items:end;
+      margin-bottom:4rem;
+    }
+    .solution-header h2 { font-size:clamp(2.5rem,5vw,4.8rem); line-height:1; letter-spacing:-.04em; }
+    .solution-header p { max-width:50ch; }
+
+    .architecture {
+      display:grid;
+      grid-template-columns:1fr 120px 1.2fr 120px 1fr;
+      align-items:center;
+      gap:1rem;
+    }
+    .arch-box {
+      min-height:180px;
+      padding:1.5rem;
+      border:1px solid var(--hairline-strong);
+      border-radius:10px;
+      background:var(--panel);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .arch-box.primary { border-top:2px solid var(--signal-blue); }
+    .arch-box.receiver-box { border-top:2px solid var(--signal-copper); }
+    .arch-kicker { color:var(--text-dim); font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .arch-box h3 { font-size:1.35rem; }
+    .arch-box p { font-size:.86rem; line-height:1.5; }
+    .arch-arrow {
+      text-align:center;
+      color:var(--text-dim);
+      font-size:1.4rem;
+    }
+    .arch-arrow span {
+      display:block;
+      font-size:.65rem;
+      margin-top:.45rem;
+      color:var(--text-dim);
+      letter-spacing:.04em;
+    }
+
+    .capability-grid {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      margin-top:5rem;
+      border-top:1px solid var(--hairline);
+      border-left:1px solid var(--hairline);
+    }
+    .capability {
+      padding:2rem;
+      border-right:1px solid var(--hairline);
+      border-bottom:1px solid var(--hairline);
+    }
+    .capability h3 { font-size:1.3rem; margin-bottom:.75rem; }
+    .capability p { font-size:.9rem; }
+
+    .reality {
+      background:
+        radial-gradient(circle at 15% 40%,rgba(77,163,224,.07),transparent 30%),
+        radial-gradient(circle at 85% 65%,rgba(217,138,74,.06),transparent 30%);
+    }
+    .reality-grid {
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:6vw;
+      align-items:center;
+    }
+    .reality h2 { font-size:clamp(2.5rem,5vw,4.7rem); line-height:1.02; letter-spacing:-.04em; }
+    .reality-copy { margin-top:1.5rem; max-width:62ch; }
+    .fact-list { display:grid; gap:.7rem; }
+    .fact {
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      padding:1.1rem 1.2rem;
+      border:1px solid var(--hairline);
+      border-radius:7px;
+      background:rgba(255,255,255,.025);
+      font-size:.9rem;
+    }
+    .fact span:first-child { color:var(--text-muted); }
+    .fact span:last-child { color:var(--text-primary); text-align:right; }
+
+    .simulator-card {
+      margin-top:4rem;
+      border:1px solid var(--hairline-strong);
+      border-radius:12px;
+      overflow:hidden;
+      background:#18191b;
+      box-shadow:0 35px 90px rgba(0,0,0,.45);
+    }
+    .simulator-bar {
+      height:38px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      background:#252527;
+      color:#d7d7da;
+      font-size:13px;
+    }
+    .dots { position:absolute; left:14px; display:flex; gap:8px; }
+    .dots i { width:12px; height:12px; border-radius:50%; display:block; }
+    .dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+    .simulator-card iframe { width:100%; height:680px; border:0; display:block; background:var(--chassis); }
+    .simulator-footer {
+      padding:.8rem 1.2rem;
+      border-top:1px solid var(--hairline);
+      display:flex; justify-content:space-between;
+      font-size:.82rem;
+    }
+    .simulator-footer a { color:var(--signal-blue); text-decoration:none; }
+
+    .closing {
+      text-align:center;
+      padding:9rem 0;
+    }
+    .closing h2 {
+      max-width:850px;
+      margin:1rem auto 1.4rem;
+      font-size:clamp(2.8rem,6vw,5.7rem);
+      line-height:1;
+      letter-spacing:-.045em;
+    }
+    .closing p { max-width:650px; margin:0 auto 2.3rem; font-size:1.05rem; }
+    .button {
+      display:inline-flex;
+      padding:.9rem 1.45rem;
+      border-radius:6px;
+      text-decoration:none;
+      font-weight:700;
+      transition:transform .2s, box-shadow .2s;
+    }
+    .button.primary { background:var(--signal-blue); color:#06131c; }
+    .button.primary:hover { transform:translateY(-2px); box-shadow:0 10px 30px var(--signal-blue-dim); }
+    .button.secondary { border:1px solid var(--hairline-strong); color:var(--text-primary); margin-left:.6rem; }
+    .button.secondary:hover { transform:translateY(-2px); }
+
+    footer {
+      position:relative; z-index:1;
+      padding:2.5rem 4vw;
+      border-top:1px solid var(--hairline);
+      display:flex; justify-content:space-between; gap:1rem;
+      color:var(--text-dim); font-size:.85rem;
+    }
+    footer a { color:var(--text-muted); text-decoration:none; }
+    .footer-links { display:flex; gap:1.5rem; }
+
+    @media (max-width: 900px) {
+      .hero-grid,.definition-grid,.reality-grid,.solution-header { grid-template-columns:1fr; }
+      .hero { padding:6rem 0; }
+      .hero-aside { max-width:650px; }
+      .problem-grid { grid-template-columns:1fr; }
+      .problem-card { min-height:0; border-left:0; border-top:1px solid var(--hairline); }
+      .problem-card:first-child { border-top:0; }
+      .journey { grid-template-columns:1fr; }
+      .journey-side + .journey-side { border-left:0; border-top:1px solid var(--hairline); }
+      .architecture { grid-template-columns:1fr; }
+      .arch-arrow { padding:.2rem 0; transform:rotate(90deg); }
+      .capability-grid { grid-template-columns:1fr; }
+      .simulator-card iframe { height:560px; }
+    }
+    @media (max-width: 640px) {
+      .nav-links { gap:1rem; font-size:.78rem; }
+      .nav-links li:nth-child(2) { display:none; }
+      .wrap { width:calc(100vw - 2rem); }
+      .section-pad { padding:6rem 0; }
+      .hero h1 { font-size:clamp(3rem,15vw,5rem); }
+      .hero-aside { padding:1rem; }
+      .flow { grid-template-columns:1fr; }
+      .flow-arrow { transform:rotate(90deg); }
+      .simulator-card iframe { height:500px; }
+      .button.secondary { margin:.7rem 0 0; }
+      footer { flex-direction:column; }
+    }
+  </style>
+</head>
+
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">AVR Link</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Product</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a></li>
+  </ul>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">The problem behind AVR Link</span>
+        <h1>What is an <span class="muted">AV receiver?</span><br><span class="gradient">And why build an app for it?</span></h1>
+        <p class="hero-copy">
+          If you have never owned a home theater, an AV receiver can be an unfamiliar piece of hardware.
+          AVR Link starts with a simple problem: a receiver is the center of the system, but controlling it often feels disconnected from the devices you already use.
+        </p>
+      </div>
+
+      <figure class="hero-aside hero-image">
+        <img
+          src="images/av10.jpg"
+          alt="Front view of a Marantz AV preamplifier"
+          loading="eager"
+        >
+        <figcaption>A modern AV receiver: the central piece of a home theater system.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section-pad">
+    <div class="wrap">
+      <div class="section-heading">
+        <span class="eyebrow">01 / The hardware</span>
+        <h2>An AV receiver is the hub between your sources, display, and speakers.</h2>
+        <p>
+          In a typical home theater, multiple devices produce audio or video. The AV receiver connects those sources to the display and speakers while handling tasks such as input selection and volume control.
+        </p>
+      </div>
+
+      <div class="definition-grid">
+        <div class="definition-large">Think of it as the system's central switchboard.</div>
+        <div class="definition-copy">
+          <p><strong style="color:var(--text-primary)">Sources</strong> can include a computer, streaming box, game console, disc player, or other equipment.</p>
+          <p><strong style="color:var(--text-primary)">The receiver</strong> selects the active source, routes the signal, and controls the listening experience.</p>
+          <p><strong style="color:var(--text-primary)">The output</strong> goes to a television or projector and a speaker system, often across several audio zones.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad problem-section">
+    <div class="wrap">
+      <div class="section-heading">
+        <span class="eyebrow">02 / The friction</span>
+        <h2>The hardware is centralized. The controls aren't.</h2>
+        <p>
+          A receiver can sit at the center of a sophisticated setup while its primary control surface remains a separate physical remote or a manufacturer-specific interface.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+        <article class="problem-card">
+          <span class="problem-index">01</span>
+          <h3>The remote is somewhere else.</h3>
+          <p>You are already sitting at your computer or using your phone, but changing the receiver's volume can mean reaching for another device.</p>
+        </article>
+        <article class="problem-card">
+          <span class="problem-index">02</span>
+          <h3>The receiver is networked, but doesn't feel native.</h3>
+          <p>The receiver can communicate over a network, yet the control experience is often separated from the operating system and devices you're already using.</p>
+        </article>
+        <article class="problem-card">
+          <span class="problem-index">03</span>
+          <h3>Different devices mean different interfaces.</h3>
+          <p>A desktop, phone, and watch can all be nearby during the same listening session, but the control experience does not have to feel fragmented.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad">
+    <div class="wrap">
+      <div class="section-heading">
+        <span class="eyebrow">03 / The idea</span>
+        <h2>What if the receiver simply followed you?</h2>
+      </div>
+
+      <div class="journey">
+        <div class="journey-side">
+          <div class="journey-label">Before</div>
+          <h3>Separate control surface</h3>
+          <p>The receiver works, but controlling it means leaving the device you're already using.</p>
+          <ul>
+            <li>Find the physical remote.</li>
+            <li>Look down to identify the right control.</li>
+            <li>Change the volume or input.</li>
+            <li>Return to what you were doing.</li>
+          </ul>
+        </div>
+        <div class="journey-side">
+          <div class="journey-label">AVR Link</div>
+          <h3>Control from where you already are.</h3>
+          <p>AVR Link brings receiver controls onto the Apple devices already in your workflow.</p>
+          <ul>
+            <li>Adjust volume directly from the Mac menu bar.</li>
+            <li>Use the iPhone as a full receiver controller.</li>
+            <li>Make quick changes from Apple Watch.</li>
+            <li>Keep the receiver itself out of the interaction loop.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad solution">
+    <div class="wrap">
+      <div class="solution-header">
+        <div>
+          <span class="eyebrow">04 / The software</span>
+          <h2>One receiver.<br>Three interfaces.</h2>
+        </div>
+        <p>
+          AVR Link is a native Apple control layer for compatible Denon and Marantz receivers. The interface changes with the device, while the underlying purpose stays the same: control the receiver without interrupting what you're doing.
+        </p>
+      </div>
+
+      <div class="architecture" aria-label="AVR Link architecture">
+        <div class="arch-box primary">
+          <span class="arch-kicker">Apple devices</span>
+          <h3>Mac · iPhone · Watch</h3>
+          <p>Native interfaces designed around the capabilities of each device.</p>
+        </div>
+        <div class="arch-arrow">→<span>control</span></div>
+        <div class="arch-box">
+          <span class="arch-kicker">AVR Link</span>
+          <h3>Control layer</h3>
+          <p>Translates user interactions into receiver commands and keeps the experience consistent across clients.</p>
+        </div>
+        <div class="arch-arrow">→<span>network</span></div>
+        <div class="arch-box receiver-box">
+          <span class="arch-kicker">Hardware</span>
+          <h3>Denon · Marantz</h3>
+          <p>The physical AV receiver remains the system's central audio/video hub.</p>
+        </div>
+      </div>
+
+      <div class="capability-grid">
+        <article class="capability">
+          <h3>Menu-bar volume control</h3>
+          <p>The ScrubHud turns a common action—changing volume—into a quick desktop interaction without opening a full remote interface.</p>
+        </article>
+        <article class="capability">
+          <h3>Native device surfaces</h3>
+          <p>Mac, iPhone, and Apple Watch each get an interface suited to that platform rather than a single UI squeezed across devices.</p>
+        </article>
+        <article class="capability">
+          <h3>Receiver state</h3>
+          <p>The app is built around communicating with the receiver rather than merely presenting a static remote-control mockup.</p>
+        </article>
+        <article class="capability">
+          <h3>Compatibility testing</h3>
+          <p>Receiver support is tracked against models that have been externally tested, reflecting the differences between real-world hardware generations.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad reality">
+    <div class="wrap">
+      <div class="reality-grid">
+        <div>
+          <span class="eyebrow">05 / A real product</span>
+          <h2>This isn't just a remote UI.</h2>
+          <p class="reality-copy">
+            The interesting part of AVR Link is the layer between the interface and the hardware: turning receiver-specific behavior into a coherent application that can be used from multiple Apple platforms.
+          </p>
+        </div>
+
+        <div class="fact-list">
+          <div class="fact"><span>Target hardware</span><span>Denon &amp; Marantz AV receivers</span></div>
+          <div class="fact"><span>Desktop</span><span>Native macOS menu-bar utility</span></div>
+          <div class="fact"><span>Mobile</span><span>Native iOS companion</span></div>
+          <div class="fact"><span>Wearable</span><span>watchOS remote</span></div>
+          <div class="fact"><span>Verification</span><span>Physical receiver testing</span></div>
+          <div class="fact"><span>Project scope</span><span>Product, UI, integration &amp; testing</span></div>
+        </div>
+      </div>
+
+      <div class="simulator-card">
+        <div class="simulator-bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          AVR Link Simulator
+        </div>
+        <iframe src="web_preview.html" title="Interactive AVR Link Simulator" loading="lazy"></iframe>
+        <div class="simulator-footer">
+          <span style="color:var(--text-muted)">The interface you're looking at is the same product concept described above.</span>
+          <a href="web_preview.html" target="_blank" rel="noopener">Open fullscreen ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <span class="eyebrow">06 / The result</span>
+      <h2>A complicated piece of hardware becomes a familiar Apple interaction.</h2>
+      <p>
+        AVR Link is ultimately about reducing the distance between the receiver and the person using it—without replacing the receiver, its capabilities, or the home theater around it.
+      </p>
+      <a class="button primary" href="index.html">Explore AVR Link</a>
+      <a class="button secondary" href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>&copy; AVR Link. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="index.html">Product</a>
+    <a href="support.html">Support</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</footer>
+</body>
+</html>
