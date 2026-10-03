@@ -1,19 +1,2792 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/avrlink/icon.png" />
-  <link rel="apple-touch-icon" href="/avrlink/icon.png" />
-  <meta name="apple-itunes-app" content="app-id=6807123807" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AVR Link — Seamless AV Receiver Control</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/avrlink/assets/index-BDVnMWpp.js"></script>
-  <link rel="stylesheet" crossorigin href="/avrlink/assets/index-5T2oIONK.css">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-itunes-app" content="app-id=6807123807">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVR Link — Seamless AV Receiver Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Matte-black chassis, not blue-black — like anodized aluminum under warm room light */
+    --chassis: #0c0d0f;
+    --panel: rgba(255, 255, 255, 0.03);
+    --panel-elevated: rgba(255, 255, 255, 0.05);
+    --hairline: rgba(255, 255, 255, 0.09);
+    --hairline-strong: rgba(255, 255, 255, 0.18);
+
+    /* Two signal channels, lifted straight from the app icon: cool digital / warm analog */
+    --signal-blue: #4da3e0;
+    --signal-blue-dim: rgba(77, 163, 224, 0.14);
+    --signal-copper: #d98a4a;
+    --signal-copper-dim: rgba(217, 138, 74, 0.14);
+
+    --text-primary: #f3f1ec;
+    --text-muted: #93979d;
+    --text-dim: #55585d;
+
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --nav-height: 72px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--chassis);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--signal-blue-dim); color: var(--text-primary); }
+
+  /* Faint edge vignette — the way rack gear looks photographed in a dim room. No color wash. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 55%),
+                radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Navigation */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--nav-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4vw;
+    background: rgba(12, 13, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.2rem;
+    list-style: none;
+    font-size: 0.92rem;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+
+  /* AV receiver explainer */
+  .receiver-explainer {
+    padding: 8.5rem 4vw;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .receiver-explainer-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+    gap: clamp(2rem, 7vw, 7rem);
+    align-items: start;
+  }
+  .receiver-explainer h2 {
+    margin: .65rem 0 0;
+    max-width: 11ch;
+    font: 700 clamp(2rem, 4vw, 3.4rem)/1.05 var(--font-display);
+    letter-spacing: -.035em;
+  }
+  .receiver-explainer-copy {
+    max-width: 62ch;
+    padding-top: .35rem;
+  }
+  .receiver-explainer-copy p {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .receiver-explainer-copy p:last-child { margin-bottom: 0; }
+  .receiver-explainer-copy strong { color: var(--text-primary); }
+  @media (max-width: 700px) {
+    .receiver-explainer { padding: 6.5rem 5vw; }
+    .receiver-explainer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .receiver-explainer h2 { max-width: none; }
+  }
+
+  /* Hero */
+  .hero-container {
+    position: relative;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    min-height: calc(100vh - var(--nav-height));
+    min-height: calc(100dvh - var(--nav-height));
+    padding: 2rem 4vw;
+    overflow: hidden;
+  }
+
+  .hero-text-column {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    max-width: 780px;
+    flex: 0 1 780px;
+  }
+
+  /* Invisible spacer, sized to match the icon frame's own footprint, that
+     sits beside the text column purely so the flex row below can center
+     the (text + icon-shaped-space) pair as a balanced whole. The real
+     icon is a fixed, viewport-anchored element (see .hero-icon-wrap) —
+     this anchor exists only so its on-screen position can be measured
+     and used as the icon's "beside the headline" rest position, instead
+     of a guessed pixel offset that didn't stay in sync with the text
+     column's actual width or the viewport's actual size. */
+  .hero-icon-anchor {
+    flex: 0 0 auto;
+    width: clamp(240px, 32vw, 480px);
+    aspect-ratio: 1 / 1;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* The app icon, watching the cursor from the back of the hero.
+     position: fixed (not absolute) so it behaves like a persistent
+     background object anchored to the viewport rather than scrolling
+     away with .hero-container's own document flow — it stays in view
+     as a floating badge and is simply painted over by whatever
+     content comes after the hero in the DOM once you scroll past it. */
+  .hero-icon-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: -100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    perspective: 1000px;
+    will-change: transform;
+  }
+
+  .hero-icon-frame {
+    width: clamp(240px, 32vw, 480px);
+    aspect-ratio: 1 / 1;
+    opacity: 0.16;
+    border-radius: 22%;
+    /* Pushed further from the camera established by .hero-icon-wrap's
+       `perspective: 1000px`. This is a plain translateZ on an ancestor of
+       #heroIcon, not a change to #heroIcon's OWN perspective(2400px)/rotate
+       transform — so the cursor look-at math doesn't need to change at all.
+       #heroIcon still establishes its own local 2400px perspective camera
+       for its child layers and rotates exactly as before; this translateZ
+       just moves that entire already-correct rig further from the outer
+       camera, which under perspective foreshortening uniformly shrinks and
+       recedes it (scale ≈ 1000 / (1000 + 400) here) without altering how
+       much it turns toward the cursor. */
+    transform: translateZ(-400px);
+    /* No overflow:hidden here on purpose: any overflow value other than
+       visible on an ancestor of a transform-style:preserve-3d element
+       forces the browser to flatten that 3D subtree to a 2D bitmap
+       before compositing. That flattening is exactly what was making
+       the slab stack look paper-thin and killing the visible response
+       to rotation. The stack doesn't need frame-level clipping anyway —
+       each slice is already rounded. */
+  }
+
+  .hero-icon-parallax {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform: perspective(2400px) rotateX(0deg) rotateY(0deg);
+    transform-style: preserve-3d;
+    will-change: transform;
+    /* Pivot anchored at the background slab's depth (matches icon-layer-bg's
+       translateZ), not the stage's own geometric center. The glyph layer sits
+       at a POSITIVE translateZ (in front) while the background sits at
+       NEGATIVE translateZ (behind) — with the default center pivot they were
+       on opposite sides of Z=0, so the same rotation sent them swinging in
+       opposite screen directions (a scissoring/spinning look) instead of
+       together. Anchoring the pivot at the background keeps it essentially
+       still and makes the glyph do the (single-direction) swinging, which is
+       what "far layer barely shifts, near one swings much further" actually
+       requires. */
+    transform-origin: 50% 50% -180px;
+  }
+
+  /* Real layers occupying real depth. The stage above rotates as one
+     rigid body toward the cursor; each layer's own translateZ decides
+     how much screen-space motion that shared rotation produces —
+     the far layer barely shifts, the near one swings much further. */
+  .icon-layer {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .icon-layer-bg {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(-180px);
+  }
+
+  /* Safety net: a single oversized, flattened, far-back copy of the
+     gradient. It's never meant to be seen as itself — it just guarantees
+     that if the visible slice stack's edge ever outruns the frame at
+     extreme tilt, what shows through is more darkened material, not a
+     hole in the icon. */
+  /* icon-slab-backing removed: with the current perspective/rotation
+     range the real slice stack never opens a gap, so the fallback
+     layer was unnecessary and kept surfacing as a visible ghost
+     shape whenever the tuning changed. */
+
+  /* The background is a genuine physical slab: dozens of identical
+     rounded squares stacked a few pixels apart in real Z, each a touch
+     darker than the one in front — but still carrying the SAME blue-to-
+     copper gradient, just dimmed (brightness scaling keeps hue intact).
+     Sized close to the frame itself (not oversized) so tilting actually
+     brings its stepped, gradient-colored edge into view instead of
+     hiding it off-screen. */
+  #iconSlabMount {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .icon-slab-slice {
+    position: absolute;
+    inset: -3%;
+    border-radius: 22%;
+    background: linear-gradient(180deg, #1b6cae 0%, #c58e56 70%);
+    background: linear-gradient(180deg, color(display-p3 0.10278 0.42419 0.68586) 0%, color(display-p3 0.77674 0.55548 0.33998) 70%);
+    transform: translateZ(var(--z));
+    filter: brightness(var(--b));
+  }
+
+  /* Light source from the top-left, painted only on the front face:
+     a soft hotspot plus a faint directional sheen raking the gradient. */
+  .icon-slab-front::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 22%;
+    background:
+      radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.18) 28%, transparent 60%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 45%);
+    mix-blend-mode: overlay;
+  }
+
+  .icon-layer-glyph {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    /* pulled much further toward the viewer, away from the background,
+       so the same shared rotation sweeps it noticeably further */
+    transform: translateZ(-140px) scale(1);
+  }
+
+  /* icon.json's glyph group: scale 4.5 on a 1024pt canvas, translated
+     [0, 79.1618125]pt from center. viewBox is 187.396 x 200.38, so:
+       width  = 187.396 * 4.5 / 1024 = 82.352% of the canvas
+       top    = 50% + 79.1618125 / 1024 = 57.731% (center, shifted down)
+     left/top position the un-scaled center point on the canvas; the
+     translate(-50%, -50%) below re-centers the (already up-scaled) art
+     on that point, same as Icon Composer's own transform order.
+
+     The glyph gets the same real-slab treatment as the background: five
+     copies of the actual badge artwork, each a couple of pixels further
+     back and a shade darker. Because drop-shadow/brightness follow the
+     PNG's own alpha silhouette, the "sides" that appear on tilt trace
+     the wifi-badge outline itself, not a rectangle. */
+  .glyph-slice {
+    position: absolute;
+    left: 50%;
+    top: 57.731%;
+    width: 82.352%;
+    height: auto;
+    display: block;
+    transform: translate(-50%, -50%) translateZ(var(--z));
+    filter: brightness(var(--b));
+  }
+
+  .glyph-front {
+    /* light raking in from the top-left: a bright rim on that edge,
+       and the cast shadow falls away to the bottom-right */
+    filter:
+      drop-shadow(-2px -2px 2px rgba(255, 255, 255, 0.35))
+      drop-shadow(14px 26px 30px rgba(0, 0, 0, 0.5));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-icon-parallax { transition: none; }
+  }
+
+  @media (hover: none) {
+    .ecosystem-card:hover::after { background: rgba(8, 10, 12, 0.62); }
+    .ecosystem-card:hover .ecosystem-card-copy { opacity: 1; transform: none; pointer-events: auto; }
+  }
+
+  @media (max-width: 1024px) {
+    .hero-icon-wrap { justify-content: center; opacity: 0.6; }
+    .hero-icon-frame { width: 55vw; opacity: 0.1; overflow: hidden; }
+    .hero-container { justify-content: flex-start; gap: 0; }
+    .hero-text-column { flex: 1 1 auto; width: 100%; }
+    .hero-icon-anchor { display: none; }
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 5.6vw, 4.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-headline > span {
+    display: block;
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+    filter: blur(6px);
+    animation: premiumLoadIn 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    will-change: opacity, transform, filter;
+  }
+
+  /* Weight and brightness carry the emphasis — no color accent on the line */
+  .hero-headline .phrase-part-1 {
+    font-weight: 500;
+    color: var(--text-muted);
+    animation-delay: 0.0s;
+  }
+
+  /* phrase-part-2 no longer fades in as a single block — it's a plain,
+     always-visible container. Its three word-blocks below are what
+     actually animate, in sequence, so the sentence builds up in stages
+     rather than arriving all at once. */
+  .hero-headline .phrase-part-2 {
+    font-weight: 800;
+    color: var(--text-primary);
+    display: block;
+    opacity: 1;
+    animation: none;
+    transform: none;
+    filter: none;
+  }
+
+  @keyframes premiumLoadIn {
+    0% { opacity: 0; transform: translateY(10px) scale(0.99); filter: blur(6px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  /* ---- Catch-phrase build sequence: "that moves" → "seamlessly" → "with
+     you". Timeline (measured from page load, matching phrase-part-1's own
+     0.0s delay / 0.9s duration finishing at ~1.0s):
+
+       0.0s –1.0s   phrase-part-1 settles in (existing premiumLoadIn)
+       1.0s –1.5s   intentional pause — nothing new happens
+       1.5s –1.9s   "that moves" — quick reveal (0.4s)
+       1.9s –2.35s  hold, then a quick turnaround into "seamlessly"
+       2.35s–3.65s  "seamlessly" — slow, deliberate left-to-right reveal
+                    (1.3s), which is also when its blue→copper gradient
+                    is progressively uncovered
+       3.65s–4.0s   brief moment to register, before...
+       4.0s –4.35s  "with you" — quick, confident resolve (0.35s)
+
+     Each word-block starts hidden (opacity: 0) so nothing appears before
+     its cue, even though all three sit in the DOM/layout from the start. */
+  .hero-headline .word-block {
+    display: inline-block;
+    opacity: 0;
+  }
+
+  .hero-headline .word-moves {
+    animation: wordReveal 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: 0.35s;
+  }
+
+  @keyframes wordReveal {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* "seamlessly" is reached quickly but revealed slowly. It does not
+     slide onto the screen — the word sits in its final position the
+     whole time, and a clip-path mask uncovers it left-to-right, so it
+     reads as something progressively emerging rather than something
+     animated in. That uncovering is what also plays out the gradient:
+     since the mask opens left→right and the gradient runs blue→neutral→
+     copper across the same axis, the color progression appears exactly
+     as the letters do. */
+  .hero-headline .word-seamlessly {
+    opacity: 1;
+    vertical-align: bottom;
+  }
+
+  .hero-headline .seamlessly-inner {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--signal-blue) 0%, var(--text-muted) 50%, var(--signal-copper) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    clip-path: inset(0 100% 0 0);
+    animation: seamlessReveal 0.7s cubic-bezier(0.16, 0.7, 0.2, 1) forwards;
+    animation-delay: 0.75s;
+  }
+
+  @keyframes seamlessReveal {
+    0% { clip-path: inset(0 100% 0 0); }
+    100% { clip-path: inset(0 0% 0 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-headline > span { animation: none; opacity: 1; transform: none; filter: none; }
+    .hero-headline .word-block { opacity: 1; }
+    .hero-headline .seamlessly-inner { animation: none; clip-path: none; }
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.6;
+    color: var(--text-muted);
+    max-width: 52ch;
+    margin-bottom: 2.25rem;
+  }
+
+  .cta-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .btn {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.85rem 1.6rem;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: var(--signal-blue);
+    color: #06131c;
+    border: 1px solid var(--signal-blue);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--signal-blue-dim);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--hairline-strong);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--signal-copper);
+    color: var(--signal-copper);
+    transform: translateY(-2px);
+  }
+
+  .platforms-strip {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .platforms-strip div {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .platform-pip {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--signal-copper);
+  }
+
+  /* Simulator — styled like a real macOS window */
+  .simulator-wrapper {
+    padding: 2rem 4vw 6rem;
+  }
+
+  .simulator-frame-container {
+    background: #1b1b1d;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6),
+                0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    will-change: transform;
+  }
+
+  .simulator-frame-container.is-dragging {
+    transition: opacity 0.22s ease;
+    cursor: grabbing;
+  }
+
+  .simulator-frame-container.is-hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .simulator-header-bar {
+    position: relative;
+    height: 38px;
+    padding: 0 18px;
+    background: linear-gradient(to bottom, #2d2d30 0%, #252527 100%);
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d7d7da;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    user-select: none;
+  }
+
+  .simulator-window-controls {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 12px;
+  }
+
+  .simulator-window-control {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    flex: 0 0 12px;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.28),
+                0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  }
+
+  .simulator-window-control.close { background: #ff5f57; }
+  .simulator-window-control.minimize { background: #febc2e; }
+  .simulator-window-control.maximize { background: #28c840; }
+
+  .simulator-window-control::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(40, 40, 40, 0.78);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0;
+  }
+
+  .simulator-window-control.close::after { content: "×"; font-size: 10px; }
+  .simulator-window-control.minimize::after { content: "−"; font-size: 10px; }
+  .simulator-window-control.maximize::after { content: "↗"; font-size: 8px; }
+
+  .simulator-window-controls:hover .simulator-window-control::after,
+  .simulator-window-control:focus-visible::after {
+    opacity: 1;
+  }
+
+  .simulator-window-control:focus-visible {
+    outline: 2px solid rgba(77, 163, 224, 0.85);
+    outline-offset: 2px;
+  }
+
+  .simulator-iframe {
+    width: 100%;
+    height: 78vh;
+    min-height: 550px;
+    max-height: 850px;
+    border: none;
+    background: var(--chassis);
+    display: block;
+  }
+
+  .simulator-footer-bar {
+    background: #1d1d1f;
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .simulator-footer-bar a {
+    color: var(--signal-blue);
+    text-decoration: none;
+  }
+
+  .simulator-footer-bar a:hover {
+    text-decoration: underline;
+  }
+
+  /* Feature showcase */
+  .feature-showcase-section {
+    padding: 7rem 13.2vw;
+    border-top: 1px solid var(--hairline);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4.5rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .feature-text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+  }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 2.8vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-caption {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    max-width: 44ch;
+  }
+
+  .feature-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-top: 0.5rem;
+  }
+
+  .feature-bullets li {
+    padding-left: 1rem;
+    border-left: 2px solid var(--hairline-strong);
+    color: var(--text-primary);
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .feature-media-container {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 3 / 4;
+    justify-self: end;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--panel);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  }
+
+  .feature-media-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Ecosystem — device showcase */
+  .ecosystem-section {
+    padding: 7rem 4vw;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .ecosystem-section .section-header {
+    margin-bottom: 3rem;
+    max-width: 60ch;
+  }
+
+  .ecosystem-section .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.02;
+    margin-bottom: 1rem;
+  }
+
+  .ecosystem-intro {
+    max-width: 48rem;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    line-height: 1.65;
+  }
+
+  .ecosystem-showcase {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ecosystem-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    background: var(--chassis);
+    isolation: isolate;
+    cursor: default;
+  }
+
+  /* The image is the card. The overlay keeps the copy readable until hover. */
+  .ecosystem-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: rgba(8, 10, 12, 0.62);
+    transition: background 260ms ease;
+  }
+
+  .ecosystem-card:hover::after {
+    background: rgba(8, 10, 12, 0);
+  }
+
+  .ecosystem-card.mac {
+    border-top: 2px solid var(--signal-blue);
+  }
+
+  .ecosystem-card-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 30rem;
+    padding: 3rem;
+    transition: opacity 220ms ease, transform 260ms ease;
+  }
+
+  .ecosystem-card:hover .ecosystem-card-copy {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+  }
+
+  .ecosystem-card .card-platform-tag {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--signal-blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ecosystem-card h3 {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 2.7vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .ecosystem-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .ecosystem-device-image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: var(--chassis);
+  }
+
+  .ecosystem-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .ecosystem-card-column {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ecosystem-card.secondary {
+    /* Height is derived from each image's intrinsic aspect ratio. */
+  }
+
+  .ecosystem-card.secondary .ecosystem-card-copy {
+    padding: 2.5rem;
+  }
+
+  .ecosystem-card.secondary .card-platform-tag {
+    color: var(--signal-copper);
+  }
+
+  .ecosystem-card.iphone .ecosystem-device-image,
+  .ecosystem-card.ipad .ecosystem-device-image {
+    object-position: center;
+  }
+
+  /* Fills the leftover height beneath the shorter image in the secondary row.
+     Uses the same blue → neutral → copper signal gradient as the hero "you." */
+  .ecosystem-filler {
+    opacity: 0.9;
+    position: relative;
+    width: 100%;
+    height: 0;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(90deg, var(--signal-blue) 0%, var(--text-muted) 50%, var(--signal-copper) 100%);
+    pointer-events: none;
+  }
+
+  .ecosystem-filler::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 10, 12, 0.62);
+  }
+
+
+  /* Compatibility */
+  /* Compatibility search */
+.compatibility-search {
+    max-width: 720px;
+    margin-bottom: 2rem;
+  }
+
+.compatibility-search-label {
+    display: block;
+    margin-bottom: 0.7rem;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+.compatibility-search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 64px;
+    padding: 0 1.15rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
+    background: var(--panel);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+.compatibility-search-box:focus-within {
+    border-color: var(--signal-blue);
+    box-shadow: 0 0 0 3px rgba(77, 163, 224, 0.1);
+  }
+
+.compatibility-search-icon {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: 1.55rem;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+
+.compatibility-search-input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 1.05rem;
+  }
+
+.compatibility-search-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+.compatibility-search-input::-webkit-search-cancel-button {
+    filter: grayscale(1);
+  }
+
+.compatibility-search-hint {
+    margin: 0.65rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+.compatibility-results {
+    min-height: 72px;
+    margin-bottom: 2.5rem;
+  }
+
+.compatibility-result-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 0.7rem;
+  }
+
+  @media (max-width: 640px) {
+    .compatibility-result-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+.compatibility-results-heading {
+    margin-bottom: 0.85rem;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+.compatibility-result {
+    position: relative;
+    display: block;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: var(--panel);
+    cursor: pointer;
+    overflow: visible;
+  }
+
+.compatibility-result[aria-expanded="true"] {
+    z-index: 10;
+  }
+
+.compatibility-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+.compatibility-result-name {
+    min-width: 0;
+  }
+
+.compatibility-result-chevron {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1;
+    transition: transform 180ms ease;
+  }
+
+.compatibility-result[aria-expanded="true"] .compatibility-result-chevron {
+    transform: rotate(180deg);
+  }
+
+.compatibility-result-details {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.7rem);
+    left: 0;
+    right: 0;
+    padding: 0.95rem 1.1rem 1rem;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: var(--chassis);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+    z-index: 20;
+  }
+
+.compatibility-result[aria-expanded="true"] .compatibility-result-details {
+    display: block;
+  }
+
+.compatibility-result-detail {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+.compatibility-result-detail + .compatibility-result-detail {
+    margin-top: 0.5rem;
+  }
+
+.compatibility-result-detail-label {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+.compatibility-result-model {
+    color: var(--text-primary);
+    font-size: 0.96rem;
+    font-weight: 600;
+  }
+
+.compatibility-result-brand {
+    font-weight: 700;
+  }
+
+.compatibility-result-brand.denon {
+    color: var(--signal-blue);
+  }
+
+.compatibility-result-brand.marantz {
+    color: var(--signal-copper);
+  }
+
+.compatibility-empty {
+    padding: 1rem 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+.compatibility-browse {
+    border-top: 1px solid var(--hairline);
+  }
+
+.compatibility-browse summary {
+    padding: 1.35rem 0;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    list-style-position: outside;
+  }
+
+.compatibility-browse summary::marker {
+    color: var(--text-muted);
+  }
+
+.compatibility-browse[open] summary {
+    margin-bottom: 1.5rem;
+  }
+
+.compatibility-section {
+    padding: 7rem 4vw;
+    border-top: 1px solid var(--hairline);
+  }
+  .compatibility-empty a {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--hairline-strong);
+    text-underline-offset: 3px;
+  }
+
+  .compatibility-intro {
+    max-width: 58ch;
+    margin-bottom: 3.5rem;
+  }
+
+  .compatibility-intro p {
+    margin-top: 1rem;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    line-height: 1.6;
+  }
+
+  .compatibility-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 1px solid var(--hairline-strong);
+    border-radius: 10px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+
+  .compatibility-brand {
+    padding: 2.5rem 2.25rem 2.75rem;
+    min-height: 260px;
+  }
+
+  .compatibility-brand + .compatibility-brand {
+    border-left: 1px solid var(--hairline);
+  }
+
+  .compatibility-brand-label {
+    display: block;
+    margin-bottom: 1.5rem;
+    color: var(--signal-blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .compatibility-brand:nth-child(2) .compatibility-brand-label {
+    color: var(--signal-copper);
+  }
+
+  .compatibility-brand h3 {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+  }
+
+  .compatibility-models {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .compatibility-models li {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    background: rgba(255, 255, 255, 0.015);
+  }
+
+  .compatibility-note {
+    margin-top: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  /* Support banner */
+  .support-section {
+    padding: 6rem 4vw;
+    border-top: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .support-text { max-width: 46ch; }
+
+  .support-text h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.6rem;
+  }
+
+  .support-text p {
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+
+  .support-text a {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--hairline-strong);
+    text-underline-offset: 3px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 2.5rem 4vw;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.75rem;
+  }
+
+  footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  footer a:hover {
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 1024px) {
+    .feature-showcase-section {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      padding: 5rem 6vw;
+    }
+    .feature-media-container { justify-self: center; }
+    .ecosystem-card.mac .ecosystem-card-copy { padding: 2.5rem; }
+    .ecosystem-secondary { grid-template-columns: 1fr; }
+    .simulator-iframe { height: 60vh; min-height: 450px; }
+  }
+
+  @media (max-width: 640px) {
+    .support-section { flex-direction: column; align-items: flex-start; }
+    .ecosystem-section { padding: 5rem 4vw; }
+    .ecosystem-section .section-header { margin-bottom: 2.25rem; }
+    .ecosystem-card.mac .ecosystem-card-copy { padding: 2rem 1.75rem; }
+    .ecosystem-card.secondary .ecosystem-card-copy { padding: 2rem 1.75rem; }
+    .platforms-strip { flex-direction: column; align-items: center; gap: 0.7rem; }
+    .hero-container { min-height: calc(100dvh - var(--nav-height)); padding: 1.5rem 4vw; }
+    .nav-links { gap: 1.3rem; font-size: 0.85rem; }
+  }
+
+  /* Simulator + guided CTA */
+  .simulator-wrapper {
+    padding: 7rem 6vw;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-section-inner {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(280px, 0.95fr);
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .simulator-guide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .simulator-eyebrow {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin-bottom: 1rem;
+  }
+
+  .simulator-guide-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+  }
+
+  .simulator-guide-intro {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 34ch;
+    margin: 0 0 2rem;
+  }
+
+  .simulator-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .simulator-steps li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .simulator-step-number {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding-top: 0.15rem;
+  }
+
+  .simulator-steps strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .simulator-steps p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .simulator-guide-cta {
+    margin-top: 2.2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-guide-cta p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .simulator-guide-cta .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  @media (max-width: 1024px) {
+    .simulator-section-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    .simulator-guide {
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    /* Hide the desktop simulator and floating hero icon on phones. */
+    .simulator-wrapper {
+      display: none;
+    }
+
+    .hero-icon-wrap,
+    .hero-icon-anchor {
+      display: none !important;
+    }
+
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+
+    .simulator-guide-title {
+      font-size: 2rem;
+    }
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+    .simulator-guide-title {
+      font-size: 2rem;
+    }
+  }
+
+</style>
+
+
+<style id="device-aware-app-promo">
+  .device-app-cta {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .mac-app-cta {
+    display: none;
+    flex: 0 0 auto;
+    line-height: 0;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mac-app-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--signal-blue-dim);
+  }
+
+  .mac-app-cta img {
+    display: block;
+    width: 190px;
+    height: auto;
+  }
+
+  /* The native Apple Smart App Banner handles iPhone/iPad.
+     Hide the redundant custom app CTA there, but retain support below. */
+  html.device-ios .device-promo-app-link {
+    display: none;
+  }
+
+  /* macOS: the hero CTA uses Apple's Mac App Store badge. */
+  html.device-macos .app-store-cta {
+    display: none;
+  }
+
+  html.device-macos .mac-app-cta {
+    display: inline-flex;
+  }
+
+
+  /* Simulator + guided CTA */
+  .simulator-wrapper {
+    padding: 7rem 6vw;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-section-inner {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 2.05fr) minmax(280px, 0.95fr);
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .simulator-guide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .simulator-eyebrow {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin-bottom: 1rem;
+  }
+
+  .simulator-guide-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+  }
+
+  .simulator-guide-intro {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 34ch;
+    margin: 0 0 2rem;
+  }
+
+  .simulator-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .simulator-steps li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .simulator-step-number {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding-top: 0.15rem;
+  }
+
+  .simulator-steps strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.94rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .simulator-steps p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .simulator-guide-cta {
+    margin-top: 2.2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .simulator-guide-cta p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .simulator-guide-cta .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  @media (max-width: 1024px) {
+    .simulator-section-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    .simulator-guide {
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .simulator-wrapper {
+      padding: 5rem 4vw;
+    }
+    .simulator-section-inner {
+      gap: 2.5rem;
+    }
+    .simulator-guide-title {
+      font-size: 2rem;
+    }
+  }
+
+</style>
+
+
+<style id="mobile-desktop-notice-styles">
+  .mobile-desktop-notice {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 90;
+    width: min(300px, calc(100vw - 2rem));
+    padding: 0.9rem 2.5rem 0.9rem 1rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    background: rgba(20, 22, 25, 0.88);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    transform: translate3d(var(--notice-x, 0px), var(--notice-y, 0px), 0);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    will-change: transform;
+  }
+
+  .mobile-desktop-notice strong {
+    display: block;
+    margin-bottom: 0.18rem;
+    font-size: 0.84rem;
+  }
+
+  .mobile-desktop-notice p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .mobile-desktop-notice-close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.6rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mobile-desktop-notice-close:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .mobile-desktop-notice.is-dismissed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(calc(var(--notice-x, 0px) + 24px), -8px, 0) scale(0.98);
+  }
+
+  @media (min-width: 641px) {
+    .mobile-desktop-notice { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .cta-group .btn-primary[href="#simulator"] { display: none; }
+  }
+</style>
+
 </head>
 <body>
-  <div id="root"></div>
+<div class="mobile-desktop-notice" id="mobileDesktopNotice" role="status">
+  <button class="mobile-desktop-notice-close" type="button" aria-label="Dismiss">×</button>
+  <strong>More on desktop</strong>
+  <p>Full simulator and more features are available on desktop.</p>
+</div>
+
+
+<nav>
+  <a href="#" class="nav-brand">
+    <span>AVR Link</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a></li>
+  </ul>
+</nav>
+
+<main>
+  <section class="hero-container">
+    <div class="hero-icon-wrap" aria-hidden="true">
+      <div class="hero-icon-frame">
+        <div class="hero-icon-parallax" id="heroIcon">
+          <div class="icon-layer icon-layer-bg">
+          <div id="iconSlabMount"></div>
+        </div>
+          <div class="icon-layer icon-layer-glyph" id="iconGlyphMount"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-text-column">
+      <h1 class="hero-headline">
+        <span class="phrase-part-1">Your AVR.</span>
+        <span class="phrase-part-2"><span class="word-block word-moves">It follows</span> <span class="word-block word-seamlessly"><span class="seamlessly-inner">you.</span></span></span>
+      </h1>
+      <p class="hero-sub">Control your Denon or Marantz receiver from your Mac, iPhone, and Apple Watch without reaching for the remote.</p>
+      <div class="cta-group">
+        <a href="#simulator" class="btn btn-primary">Try the simulator</a>
+        <span class="device-app-cta">
+  <a class="btn btn-secondary app-store-cta"
+     href="https://apps.apple.com/us/app/avr-link/id6807123807"
+     target="_blank" rel="noopener">View on the App Store</a>
+  <a class="mac-app-cta"
+     href="itms-apps://itunes.apple.com/us/app/id6807123807"
+     aria-label="Download AVR Link on the Mac App Store">
+    <img src="https://tools.applemediaservices.com/api/badges/download-on-the-mac-app-store/black/en-us?size=250x83"
+         alt="Download on the Mac App Store">
+  </a>
+</span>
+      </div>
+      <div class="platforms-strip">
+        <div><span class="platform-pip"></span> macOS Menu Bar</div>
+        <div><span class="platform-pip"></span> iOS Companion</div>
+        <div><span class="platform-pip"></span> watchOS Remote</div>
+      </div>
+    </div>
+    <div class="hero-icon-anchor" aria-hidden="true"></div>
+  </section>
+
+  
+
+
+
+
+  <section class="receiver-explainer" aria-labelledby="receiver-explainer-title">
+    <div class="receiver-explainer-inner">
+      <div>
+        <span class="eyebrow">The hardware</span>
+        <h2 id="receiver-explainer-title">So, what is an AV receiver?</h2>
+      </div>
+      <div class="receiver-explainer-copy">
+        <p><strong>Think of it as the switchboard for your home theater.</strong></p>
+        <p>Your TV, game console, streamer, and speakers all connect through it. The receiver routes the audio and video, selects what you want to watch or listen to, and handles controls like volume along the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-showcase-section" id="showcase">
+    <div class="feature-text-content">
+      <h2 class="feature-title">Volume control, down to one gesture.</h2>
+      <p class="feature-caption">AVR Link's ScrubHud lives quietly in your menu bar until you need it. It shouldn't be a hassle to listen to music.</p>
+      <ul class="feature-bullets">
+        <li>Hold and drag anywhere in the menu bar to open the ScrubHud and adjust the Main zone's volume instantly.</li>
+        <li>Turn on Open at Login and it's already running by the time you sit down to listen.</li>
+        <li>One app follows you across Mac, iPhone, and Apple Watch. A unified platform for your high-end receiver.</li>
+      </ul>
+    </div>
+    <div class="feature-media-container">
+      <video autoplay loop muted playsinline>
+        <source src="scrubhud.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </section>
+
+  <section class="ecosystem-section" id="ecosystem">
+    <div class="section-header">
+      <h2 class="section-title">One receiver.<br>Every screen.</h2>
+      <p class="ecosystem-intro">Your theater follows you across the Apple devices you already use.</p>
+    </div>
+
+    <div class="ecosystem-showcase">
+      <article class="ecosystem-card mac">
+        <div class="ecosystem-card-copy">
+          <span class="card-platform-tag">macOS</span>
+          <h3>Full control from your desktop.</h3>
+          <p>Keep your receiver within reach from the menu bar, with fast volume control and a native desktop experience.</p>
+        </div>
+        <img class="ecosystem-device-image" src="images/mac.jpg" alt="AVR Link on Mac">
+      </article>
+
+      <div class="ecosystem-secondary">
+        <div class="ecosystem-card-column">
+          <article class="ecosystem-card secondary iphone">
+            <div class="ecosystem-card-copy">
+              <span class="card-platform-tag">iPhone</span>
+              <h3>Your remote, wherever you are.</h3>
+              <p>Bring complete receiver control with you, from the room to the couch.</p>
+            </div>
+            <img class="ecosystem-device-image" src="images/iphone.jpg" alt="AVR Link on iPhone">
+          </article>
+        </div>
+
+        <div class="ecosystem-card-column">
+          <article class="ecosystem-card secondary ipad">
+            <div class="ecosystem-card-copy">
+              <span class="card-platform-tag">iPad</span>
+              <h3>More room. More control.</h3>
+              <p>A larger canvas for your theater, with the same familiar AVR Link controls.</p>
+            </div>
+            <img class="ecosystem-device-image" src="images/ipad.jpg" alt="AVR Link on iPad">
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="simulator-wrapper" id="simulator">
+  <div class="simulator-section-inner">
+    <div class="simulator-frame-container" id="simulatorWindow">
+      <div class="simulator-header-bar">
+        <div class="simulator-window-controls" role="group" aria-label="Simulator window controls">
+          <button class="simulator-window-control close" type="button" aria-label="Close simulator"></button>
+          <button class="simulator-window-control minimize" type="button" aria-label="Minimize simulator"></button>
+          <button class="simulator-window-control maximize" type="button" aria-label="Open simulator fullscreen"></button>
+        </div>
+        <span>AVR Link Simulator</span>
+      </div>
+      <iframe class="simulator-iframe" src="web_preview.html" title="AVR Link Web Simulator" loading="eager"></iframe>
+      <div class="simulator-footer-bar">
+        <span>Direct preview mode</span>
+        <a href="web_preview.html" target="_blank" rel="noopener">Open fullscreen ↗</a>
+      </div>
+    </div>
+
+    <aside class="simulator-guide">
+      <span class="simulator-eyebrow">TRY IT YOURSELF</span>
+      <h2 class="simulator-guide-title">Control your receiver.</h2>
+      <p class="simulator-guide-intro">This is the same interface you’ll use in AVR Link. Take a moment to explore it.</p>
+
+      <ol class="simulator-steps">
+        <li>
+          <span class="simulator-step-number">01</span>
+          <div><strong>Choose an input</strong><p>Switch between your receiver’s available sources.</p></div>
+        </li>
+        <li>
+          <span class="simulator-step-number">02</span>
+          <div><strong>Adjust the volume</strong><p>Try the volume controls and see how the interface responds.</p></div>
+        </li>
+        <li>
+          <span class="simulator-step-number">03</span>
+          <div><strong>Explore the controls</strong><p>Look around the interface and discover what’s available.</p></div>
+        </li>
+      </ol>
+
+      <div class="simulator-guide-cta">
+        <p>Like what you see?</p>
+        <a href="https://apps.apple.com/us/app/avr-link/id6807123807" class="btn btn-primary" target="_blank" rel="noopener">Download AVR Link <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="compatibility-section" id="compatibility">
+    <div class="compatibility-intro">
+      <div class="section-header" style="margin-bottom: 0;">
+        <h2 class="section-title">Is your AVR supported?</h2>
+      </div>
+      <p>Search the receivers AVR Link has been personally tested with. Start typing your model and we’ll surface the closest matches.</p>
+    </div>
+
+    <div class="compatibility-search">
+      <label class="compatibility-search-label" for="compatibilitySearch">Find your receiver</label>
+      <div class="compatibility-search-box">
+        <span class="compatibility-search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="compatibilitySearch"
+          class="compatibility-search-input"
+          type="search"
+          placeholder="e.g. AVR-X3800H"
+          autocomplete="off"
+          spellcheck="false"
+          aria-describedby="compatibilitySearchHint"
+          aria-controls="compatibilityResults"
+        >
+      </div>
+      <p id="compatibilitySearchHint" class="compatibility-search-hint">Search by model number or receiver name.</p>
+    </div>
+
+    <div id="compatibilityResults" class="compatibility-results" aria-live="polite">
+	<div class="compatibility-empty">
+            AVR Link was designed to work with most Denon and Marantz AV receivers. However, due to the limitations of being a solo developer, compatibility information is based solely on external testing. If you would like to contribute to the growing catalog, please <a href="support.html">contact us</a>.
+        </div>
+    </div>
+    <details class="compatibility-browse">
+      <summary>Browse model catalog</summary>
+      <div class="compatibility-grid">
+        <div class="compatibility-brand">
+          <span class="compatibility-brand-label">Denon</span>
+          <ul class="compatibility-models" data-brand="Denon">
+          </ul>
+        </div>
+
+        <div class="compatibility-brand">
+          <span class="compatibility-brand-label">Marantz</span>
+          <ul class="compatibility-models" data-brand="Marantz">
+          </ul>
+        </div>
+      </div>
+      <p class="compatibility-note">More tested models will be added as they are verified.</p>
+    </details>
+  </section>
+
+  <section class="support-section" id="support">
+    <div class="support-text">
+      <h2>Built by one person. Runs on all your Apple devices.</h2>
+      <p>Need help or have questions? Visit our <a href="support.html">support page</a> or check our <a href="privacy.html">privacy policy</a>.</p>
+    </div>
+    <div class="cta-group" style="margin-bottom: 0;">
+      <a href="support.html" class="btn btn-primary">Get support</a>
+      <a href="https://apps.apple.com/us/app/avr-link/id6807123807" class="btn btn-secondary" target="_blank" rel="noopener">View on the App Store</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>&copy; AVR Link. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="support.html">Support</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var simulatorWindow = document.getElementById('simulatorWindow');
+  if (!simulatorWindow) return;
+
+  var closeButton = simulatorWindow.querySelector('.simulator-window-control.close');
+  var minimizeButton = simulatorWindow.querySelector('.simulator-window-control.minimize');
+  var maximizeButton = simulatorWindow.querySelector('.simulator-window-control.maximize');
+  var headerBar = simulatorWindow.querySelector('.simulator-header-bar');
+
+  function hideSimulator() {
+    simulatorWindow.classList.add('is-hidden');
+  }
+
+  function openFullscreenSimulator() {
+    window.open('web_preview.html', '_blank', 'noopener');
+  }
+
+  closeButton.addEventListener('click', hideSimulator);
+  minimizeButton.addEventListener('click', hideSimulator);
+  maximizeButton.addEventListener('click', openFullscreenSimulator);
+
+  // Drag the simulator window by its title bar without removing it from
+  // document flow. A transform moves the window visually while its original
+  // layout box remains in place, so the page never collapses around it.
+  // Because the transform is relative to the document-flow position (rather
+  // than viewport-fixed coordinates), normal page scrolling does not make the
+  // simulator follow the viewport like a parallax/overlay element.
+  var dragging = false;
+  var startX = 0;
+  var startY = 0;
+  var offsetX = 0;
+  var offsetY = 0;
+
+  headerBar.addEventListener('pointerdown', function (event) {
+    if (event.target.closest('.simulator-window-control')) return;
+
+    dragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    headerBar.setPointerCapture(event.pointerId);
+    simulatorWindow.classList.add('is-dragging');
+    headerBar.style.cursor = 'grabbing';
+  });
+
+  headerBar.addEventListener('pointermove', function (event) {
+    if (!dragging) return;
+
+    offsetX += event.clientX - startX;
+    offsetY += event.clientY - startY;
+    startX = event.clientX;
+    startY = event.clientY;
+
+    simulatorWindow.style.transform =
+      'translate3d(' + offsetX + 'px, ' + offsetY + 'px, 0)';
+  });
+
+  function stopDragging(event) {
+    if (!dragging) return;
+    dragging = false;
+    simulatorWindow.classList.remove('is-dragging');
+    headerBar.style.cursor = '';
+    if (event.pointerId !== undefined) {
+      try { headerBar.releasePointerCapture(event.pointerId); } catch (_) {}
+    }
+  }
+
+  headerBar.addEventListener('pointerup', stopDragging);
+  headerBar.addEventListener('pointercancel', stopDragging);
+})();
+</script>
+<script>
+(function () {
+  // Build each layer as a stack of thin slices spanning its full physical
+  // thickness. Slice COUNT scales with thickness (not just the spacing)
+  // so consecutive slices never sit far enough apart to open a gap at
+  // steep tilt — that's what "chunky but still solid" requires.
+  var STEP_PX = 10; // max spacing between adjacent slices; keeps the stack gap-free at our rotation range
+
+  function buildStack(mount, tag, thicknessPx, extraAttrs, frontClass, sliceClass) {
+    var count = Math.max(2, Math.round(thicknessPx / STEP_PX) + 1);
+    for (var i = count - 1; i >= 0; i--) {
+      var el = document.createElement(tag);
+      el.className = sliceClass + (i === 0 ? ' ' + frontClass : '');
+      var z = -(thicknessPx * i / (count - 1));
+      var b = 1 - 0.92 * (i / (count - 1));
+      el.style.setProperty('--z', z.toFixed(2) + 'px');
+      el.style.setProperty('--b', b.toFixed(3));
+      if (extraAttrs) extraAttrs(el);
+      mount.appendChild(el);
+    }
+  }
+
+  var slabMount = document.getElementById('iconSlabMount');
+  var glyphMount = document.getElementById('iconGlyphMount');
+  if (slabMount) buildStack(slabMount, 'div', 80, null, 'icon-slab-front', 'icon-slab-slice');
+  if (glyphMount) buildStack(glyphMount, 'img', 40, function (el) {
+    el.src = 'custom_hifireceiver_fill_badge_wifi.svg';
+    el.alt = '';
+  }, 'glyph-front', 'glyph-slice');
+})();
+</script>
+<script>
+(function () {
+  var wrap = document.querySelector('.hero-icon-wrap');
+  var icon = document.getElementById('heroIcon');
+  var frame = document.querySelector('.hero-icon-frame');
+  if (!wrap || !icon || !frame) return;
+
+  // Reparent to <body> (unconditionally, even for reduced-motion users —
+  // this is a stacking-order fix, not part of the animation). It starts
+  // out nested inside <section class="hero-container">, which — along
+  // with <main> — is a POSITIONED element with an explicit z-index. Later
+  // sibling <section>s (simulator-wrapper, feature-showcase-section, etc.)
+  // are plain, non-positioned elements, and per the CSS stacking rules a
+  // positioned z-index element paints AFTER non-positioned in-flow
+  // siblings regardless of DOM order — so hero-container's whole subtree
+  // (including this fixed icon) could end up rendering ABOVE later
+  // sections instead of behind them. Moving it to be body's first child
+  // puts it in the page's root stacking context instead, where its very
+  // low z-index (-100, see CSS) reliably keeps it behind everything —
+  // nav, hero text, and every later section — with no dependence on
+  // where other sections' own stacking contexts happen to fall.
+  document.body.insertBefore(wrap, document.body.firstChild);
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+
+  // ---- Responsive physics constants (desktop / tablet / phone), matching
+  // the existing 1024px / 640px breakpoints used elsewhere on this page.
+  //
+  // companionOffsetX/Y, companionScale and companionOpacity describe the
+  // icon's INITIAL "hero companion" state (prominent, beside the headline).
+  // restOpacity is its resting "background" opacity — the frame's own CSS
+  // opacity (0.16) is that same resting value, so once the transition
+  // finishes the JS-driven opacity matches what a reduced-motion user (who
+  // never runs this script) sees by default. ----
+  var TUNING = {
+    desktop: { maxSwayX: 1000, maxScrollY: 1000, idleBob: 2.5, idleSway: 0.8,
+               companionOffsetX: 260, companionDipY: 34, companionScale: 1.18, companionOpacity: 0.55, restOpacity: 0.16,
+               midApproachScale: 1.55, midApproachOpacity: 0.42 },
+    tablet:  { maxSwayX: 16, maxScrollY: 114, idleBob: 2.0, idleSway: 0.6,
+               companionOffsetX: 130, companionDipY: 24, companionScale: 1.12, companionOpacity: 0.45, restOpacity: 0.16,
+               midApproachScale: 1.32, midApproachOpacity: 0.36 },
+    phone:   { maxSwayX: 10, maxScrollY: 72,  idleBob: 1.5, idleSway: 0.4,
+               companionOffsetX: 60,  companionDipY: 16, companionScale: 1.08, companionOpacity: 0.35, restOpacity: 0.16,
+               midApproachScale: 1.18, midApproachOpacity: 0.30 }
+  };
+
+  // A small, one-time "approach" around the middle of the page. It is
+  // based on total document scroll progress rather than a fixed pixel
+  // position, so it happens roughly halfway through the whole page on
+  // different screen sizes and content lengths.
+  // Mid-page approach: the icon comes forward gradually around 40–50%,
+  // stays close and large through 80%, then retreats gradually.
+  var MID_APPROACH_IN_START = 0.38;
+  var MID_APPROACH_IN_END = 0.50;
+  var MID_APPROACH_HOLD_END = 0.80;
+  var MID_APPROACH_OUT_END = 0.94;
+
+  // Keep this animation tied to the page length that existed when the page
+  // loaded, rather than recalculating it from the live document height on
+  // every frame. Expanding something later in the page (such as the model
+  // catalog) can increase scrollHeight; using that new height would make the
+  // same scroll position suddenly represent a different percentage and
+  // cause the icon to jump larger. A viewport resize is a genuine layout
+  // change, so the baseline is refreshed then.
+  var midApproachMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+
+  function refreshMidApproachScrollRange() {
+    midApproachMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  window.addEventListener('resize', refreshMidApproachScrollRange);
+
+  function smoothStep(t) {
+    t = Math.max(0, Math.min(1, t));
+    return t * t * (3 - 2 * t);
+  }
+
+  function midApproachAmount() {
+    var progress = Math.max(0, Math.min(1, window.scrollY / midApproachMaxScroll));
+
+    if (progress < MID_APPROACH_IN_START) return 0;
+    if (progress < MID_APPROACH_IN_END) {
+      return smoothStep((progress - MID_APPROACH_IN_START) / (MID_APPROACH_IN_END - MID_APPROACH_IN_START));
+    }
+    if (progress <= MID_APPROACH_HOLD_END) return 1;
+    if (progress < MID_APPROACH_OUT_END) {
+      return 1 - smoothStep((progress - MID_APPROACH_HOLD_END) / (MID_APPROACH_OUT_END - MID_APPROACH_HOLD_END));
+    }
+    return 0;
+  }
+
+  // Companion → background transition completes within this fraction of
+  // the viewport height (recomputed live, so resizing/rotating the device
+  // updates it automatically).
+  var COMPANION_SCROLL_RANGE_VH = 1.5; // 0.9 = 90% of viewport height
+
+  function currentTuning() {
+    var w = window.innerWidth;
+    if (w <= 640) return TUNING.phone;
+    if (w <= 1024) return TUNING.tablet;
+    return TUNING.desktop;
+  }
+
+  var tuning = currentTuning();
+  window.addEventListener('resize', function () { tuning = currentTuning(); });
+
+  var rect = wrap.getBoundingClientRect();
+  window.addEventListener('resize', function () { rect = wrap.getBoundingClientRect(); });
+
+  // ---- Companion rest offset, measured from the layout instead of
+  // guessed as a fixed pixel value. .hero-icon-anchor is an invisible,
+  // icon-frame-shaped spacer sitting next to the text column; wherever
+  // the flex row actually places it (which stays centered as a
+  // text+icon group at any viewport width) is where the real icon
+  // should rest at the start of the page. Below the 1024px breakpoint
+  // the anchor is display:none (mobile/tablet keep the icon as a big
+  // centered background watermark instead), so we fall back to the
+  // tuning object's fixed value there. ----
+  var anchorEl = document.querySelector('.hero-icon-anchor');
+  var anchorOffsetX = 0;
+  var usingAnchorOffset = false;
+
+  function computeAnchorOffset() {
+    if (anchorEl && window.getComputedStyle(anchorEl).display !== 'none') {
+      var anchorRect = anchorEl.getBoundingClientRect();
+      anchorOffsetX = (anchorRect.left + anchorRect.width / 2) - (window.innerWidth / 2);
+      usingAnchorOffset = true;
+    } else {
+      usingAnchorOffset = false;
+    }
+  }
+
+  computeAnchorOffset();
+  window.addEventListener('resize', computeAnchorOffset);
+
+  // ---- Companion "recognize → pull back → accelerate → overshoot →
+  // settle" curve. This is the classic animation anticipation/overshoot
+  // shape (an easeInOutBack), applied to the companion→background
+  // transition instead of a plain monotonic ease:
+  //   t≈0  → r slightly ABOVE 1 (pulls back further into the companion
+  //          pose / opposite direction from where it's about to travel)
+  //   mid  → r falls steeply through 1→0 (the decisive accelerate)
+  //   t≈1  → r dips slightly BELOW 0 just before the end (overshoots past
+  //          the background position/scale), then settles to exactly 0
+  // COMPANION_BACK_INTENSITY controls how pronounced that anticipation/
+  // overshoot is — kept low and restrained per spec (the default Penner
+  // easeInOutBack constant is 1.70158; this is deliberately gentler).
+  var COMPANION_BACK_INTENSITY = 1.05;
+
+  function companionRemaining(t) {
+    var c1 = COMPANION_BACK_INTENSITY;
+    var c2 = c1 * 1.525;
+    var e = t < 0.5
+      ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+      : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+    return 1 - e; // 1 = fully companion, 0 = fully settled into background
+  }
+
+  // ---- Cursor → 3D rotation (unchanged behavior, now feeding a
+  // continuously-running loop instead of an event-driven one) ----
+  var targetX = 0, targetY = 0, curX = 0, curY = 0;
+
+  function setCursorTarget(clientX, clientY) {
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var dx = (clientX - cx) / (rect.width / 2);
+    var dy = (clientY - cy) / (rect.height / 2);
+    targetX = Math.max(-1, Math.min(1, dx));
+    targetY = Math.max(-1, Math.min(1, dy));
+  }
+
+  window.addEventListener('mousemove', function (e) { setCursorTarget(e.clientX, e.clientY); });
+  document.addEventListener('mouseleave', function () { targetX = 0; targetY = 0; });
+
+  // ---- Scroll velocity → horizontal sway target ----
+  var lastScrollY = window.scrollY;
+  var scrollVelocity = 0;
+
+  window.addEventListener('scroll', function () {
+    var currentScrollY = window.scrollY;
+    scrollVelocity = currentScrollY - lastScrollY;
+    lastScrollY = currentScrollY;
+  }, { passive: true });
+
+  // ---- Easing: X = sway (light), Y = mass (heavier/slower). Plain
+  // exponential easing — approaches and settles directly, with no
+  // overshoot or oscillation ("vibration"). Asymmetric on purpose: a
+  // slower ease when the target is growing (pos lags noticeably behind
+  // the scroll — the "inertia" feel), and a faster ease when the target
+  // is shrinking back toward 0 (a snappier return to center). ----
+  var EASE_X_LAG = 0.010, EASE_X_RETURN = 0.045;
+  var EASE_Y_LAG = 0.063, EASE_Y_RETURN = 0.3225;
+
+  var posX = 0;
+  var posY = 0;
+
+  function easeToward(pos, target, easeLag, easeReturn) {
+    var ease = Math.abs(target) > Math.abs(pos) ? easeLag : easeReturn;
+    return pos + (target - pos) * ease;
+  }
+
+  // ---- Idle bob / sway ----
+  var IDLE_BOB_SPEED = 1.15;
+  var IDLE_SWAY_SPEED = 0.75;
+  var time = 0;
+  var lastFrameTime = null;
+
+  function render(now) {
+    if (lastFrameTime === null) lastFrameTime = now;
+    var deltaTime = Math.min(0.05, (now - lastFrameTime) / 1000); // seconds, clamped
+    lastFrameTime = now;
+    time += deltaTime;
+
+    // 1. Scroll velocity decays back toward 0 once scrolling stops (it's an
+    // instantaneous force, not an accumulator — the 'scroll' listener above
+    // only sets it while scrolling is actually happening). A slower decay
+    // here stretches out how long that force keeps feeding the springs,
+    // which is part of making the whole motion feel longer/more fluid
+    // rather than a quick jolt.
+    scrollVelocity *= 0.95;
+
+// 2. Horizontal target: cursor determines the sway direction, while
+// the amount of scroll determines how strongly it moves.
+//
+// Cursor RIGHT:
+//   scroll up/down -> sway LEFT
+//
+// Cursor LEFT:
+//   scroll up/down -> sway RIGHT
+//
+// The farther the cursor is from the icon's center, the stronger
+// the directional influence becomes.
+var cursorDirection = targetX >= 0 ? -1 : 1;
+var cursorInfluence = Math.abs(targetX);
+var swayInfluence = 3
+
+var targetSwayX = Math.max(
+  -tuning.maxSwayX,
+  Math.min(
+    tuning.maxSwayX,
+    Math.abs(scrollVelocity) * swayInfluence * cursorDirection * cursorInfluence
+  )
+);
+
+    // 3. Vertical target: also an instantaneous force from scroll velocity
+    // (same decaying signal as X), so the target itself returns to 0 as
+    // soon as scrolling stops. Combined with the slower EASE_Y below, this
+    // gives Y a heavier trail than X while still easing straight back to
+    // center with no bounce.
+    var targetScrollY = Math.max(-tuning.maxScrollY, Math.min(tuning.maxScrollY, scrollVelocity * -1.4));
+
+    // 4. Ease horizontal position toward its target — no overshoot.
+    posX = easeToward(posX, targetSwayX, EASE_X_LAG, EASE_X_RETURN);
+
+    // 5. Ease vertical position toward its target — no overshoot.
+    posY = easeToward(posY, targetScrollY, EASE_Y_LAG, EASE_Y_RETURN);
+
+    // 6. Idle bob + idle sway, layered on top of the springs.
+    var idleBob = Math.sin(time * IDLE_BOB_SPEED) * tuning.idleBob;
+    var idleSway = Math.sin(time * IDLE_SWAY_SPEED + 1.4) * tuning.idleSway;
+
+    // 6b. Hero companion → background transition: "recognize → pull back →
+    // accelerate → overshoot → settle → follow." `progress` runs 0→1 over
+    // the first COMPANION_SCROLL_RANGE px of scroll and never reverses, so
+    // this is a one-time settle, not a competing animation — it's summed
+    // into the same X/Y/scale/opacity the parallax system already drives.
+    //
+    // `r` (via companionRemaining) is NOT a plain monotonic ease: it starts
+    // slightly ABOVE 1 (a brief, subtle pull further into the companion
+    // pose — the "opposite direction" anticipation cue), falls steeply
+    // through the middle (the decisive accelerate), and dips slightly
+    // BELOW 0 near the end (overshooting past the background position)
+    // before settling to exactly 0. Multiplying offset/scale by `r`
+    // directly means the overshoot phase (r<0) naturally shrinks the icon
+    // a little past its final scale and nudges it a little past center,
+    // then eases back — no separate overshoot logic needed.
+    //
+    // Our resting "background" position is centered, so unlike the plan's
+    // generic "shifts right/downward" framing — written for a background
+    // position lower-right of the companion spot — the anticipation here
+    // is a brief push further RIGHT (away from center, opposite the
+    // eventual leftward travel) rather than further down-right.
+    var companionProgress = Math.max(0, Math.min(1, window.scrollY / (window.innerHeight * COMPANION_SCROLL_RANGE_VH)));
+    var r = companionRemaining(companionProgress);
+
+    // Opacity fades on its own plain (monotonic) ease — an opacity
+    // undershoot would just look like a flicker, not a physical cue, so it
+    // isn't driven by the same overshoot curve as position/scale.
+    var opacityEase = 1 - Math.pow(1 - companionProgress, 3);
+    var opacityRemaining = 1 - opacityEase;
+
+    var companionRestOffsetX = usingAnchorOffset ? anchorOffsetX : tuning.companionOffsetX;
+    var companionX = companionRestOffsetX * r;
+    var companionDip = tuning.companionDipY * r;
+    var companionScaleAmt = 1 + (tuning.companionScale - 1) * r;
+    var frameOpacity = tuning.restOpacity + (tuning.companionOpacity - tuning.restOpacity) * opacityRemaining;
+
+    // 6c. Mid-page approach: once the hero has settled into the background,
+    // let the icon quietly come forward again around the midpoint of the
+    // total page scroll. The pulse is intentionally small — mostly a little
+    // more scale and presence — then disappears so the icon returns to its
+    // normal background state.
+    var midApproach = midApproachAmount();
+    companionScaleAmt *= 1 + (tuning.midApproachScale - 1) * midApproach;
+    frameOpacity += (tuning.midApproachOpacity - tuning.restOpacity) * midApproach;
+
+    var finalX = posX + idleSway + companionX;
+    // finalY sums THREE independent things: posY (the velocity-driven
+    // vertical spring/inertia from steps 3+5 — unaffected by the
+    // transition's length, so it stays alive throughout even a long
+    // COMPANION_SCROLL_RANGE), idleBob, and companionDip (the transition's
+    // own anticipation/overshoot dip). The transition never suppresses or
+    // replaces the vertical inertia — it just adds on top of it.
+    var finalY = posY + idleBob + companionDip;
+
+    // 7. Apply the wrapper translation + companion scale. Pure translation
+    // and uniform scale only — no perspective/rotation here, that stays
+    // owned by #heroIcon below.
+    wrap.style.transform =
+      'translate3d(' + finalX.toFixed(2) + 'px, ' + finalY.toFixed(2) + 'px, 0) scale(' + companionScaleAmt.toFixed(3) + ')';
+    frame.style.opacity = frameOpacity.toFixed(3);
+
+    // 8. Cursor rotation, applied to #heroIcon exactly as before.
+    curX += (targetX - curX) * 0.08;
+    curY += (targetY - curY) * 0.08;
+
+    var rotateY = curX * 12;   // turns toward the cursor left/right
+    var rotateX = curY * -12;  // and tilts up/down toward it
+
+    icon.style.transform =
+      'perspective(2400px) rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
+</script>
+
+<script id="device-aware-app-detection">
+(function () {
+  const ua = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  const isMac =
+    /Macintosh|Mac OS X/.test(ua) &&
+    !isIOS;
+
+  document.documentElement.classList.toggle("device-ios", isIOS);
+  document.documentElement.classList.toggle("device-macos", isMac);
+})();
+</script>
+
+<script>
+(function () {
+  // Change this value to control how many suggestions the search displays.
+  var MAX_COMPATIBILITY_RESULTS = 6;
+  var COMPATIBILITY_CSV = 'compatibility.csv';
+
+  var input = document.getElementById('compatibilitySearch');
+  var results = document.getElementById('compatibilityResults');
+  var modelLists = document.querySelectorAll('.compatibility-models[data-brand]');
+
+  if (!input || !results) return;
+
+  var models = [];
+
+  function normalize(value) {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // Small CSV parser so model names can contain commas or quoted characters.
+  function parseCSV(text) {
+    var rows = [];
+    var row = [];
+    var field = '';
+    var quoted = false;
+
+    for (var i = 0; i < text.length; i++) {
+      var char = text[i];
+      var next = text[i + 1];
+
+      if (quoted) {
+        if (char === '"' && next === '"') {
+          field += '"';
+          i++;
+        } else if (char === '"') {
+          quoted = false;
+        } else {
+          field += char;
+        }
+      } else if (char === '"') {
+        quoted = true;
+      } else if (char === ',') {
+        row.push(field.trim());
+        field = '';
+      } else if (char === '\n') {
+        row.push(field.trim());
+        rows.push(row);
+        row = [];
+        field = '';
+      } else if (char !== '\r') {
+        field += char;
+      }
+    }
+
+    if (field || row.length) {
+      row.push(field.trim());
+      rows.push(row);
+    }
+
+    return rows;
+  }
+
+  function escapeHTML(value) {
+    return value.replace(/[&<>"']/g, function (char) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char];
+    });
+  }
+
+  function score(item, query) {
+    var model = normalize(item.model);
+    var brand = normalize(item.brand);
+    var q = normalize(query);
+
+    if (!q) return 0;
+    if (model === q) return 1000;
+    if (model.indexOf(q) === 0) return 800 - model.length;
+    if (model.indexOf(q) !== -1) return 600 - model.length;
+    if (brand.indexOf(q) === 0) return 500 - brand.length;
+    if (brand.indexOf(q) !== -1) return 400 - brand.length;
+
+    // Give partial credit when the query contains several model fragments.
+    var fragments = q.match(/[a-z]+|[0-9]+/g) || [];
+    var matched = fragments.filter(function (fragment) {
+      return model.indexOf(fragment) !== -1 || brand.indexOf(fragment) !== -1;
+    }).length;
+
+    if (matched) return matched * 100 - model.length;
+    return -1;
+  }
+
+  function renderBrowseList() {
+    modelLists.forEach(function (list) {
+      list.replaceChildren();
+    });
+
+    models.forEach(function (item) {
+      var list = document.querySelector('.compatibility-models[data-brand="' +
+        CSS.escape(item.brand) + '"]');
+
+      if (!list) return;
+
+      var entry = document.createElement('li');
+      entry.textContent = item.model;
+      list.appendChild(entry);
+    });
+  }
+
+  function render(query) {
+    if (!query.trim()) {
+      results.innerHTML = '<div class="compatibility-empty"><span>Nothing to look for!</span></div>';
+      return;
+    }
+
+    var matches = models
+      .map(function (item) {
+        return { item: item, score: score(item, query) };
+      })
+      .filter(function (entry) {
+        return entry.score >= 0;
+      })
+      .sort(function (a, b) {
+        return b.score - a.score;
+      })
+      .slice(0, MAX_COMPATIBILITY_RESULTS);
+
+    if (!matches.length) {
+      results.innerHTML =
+        '<div class="compatibility-empty"><span>No tested models matched “' +
+        escapeHTML(query) +
+        '”. Try a different model number.</span></div>';
+      return;
+    }
+
+    var heading = null;
+
+    if (matches.length > 1) {
+      heading = document.createElement('div');
+      heading.className = 'compatibility-results-heading';
+      heading.textContent = 'Compatible receivers:';
+    }
+
+    var list = document.createElement('div');
+    list.className = 'compatibility-result-list';
+
+    matches.forEach(function (entry) {
+      var card = document.createElement('div');
+      card.className = 'compatibility-result';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-expanded', 'false');
+
+      var header = document.createElement('div');
+      header.className = 'compatibility-result-header';
+
+      var name = document.createElement('div');
+      name.className = 'compatibility-result-name';
+
+      var brand = document.createElement('span');
+      brand.className = 'compatibility-result-brand ' + entry.item.brand.toLowerCase();
+      brand.textContent = entry.item.brand;
+
+      var model = document.createElement('span');
+      model.className = 'compatibility-result-model';
+      model.textContent = ' ' + entry.item.model;
+
+      name.appendChild(brand);
+      name.appendChild(model);
+
+      var chevron = document.createElement('span');
+      chevron.className = 'compatibility-result-chevron';
+      chevron.textContent = '⌄';
+      chevron.setAttribute('aria-hidden', 'true');
+
+      header.appendChild(name);
+      header.appendChild(chevron);
+
+      var details = document.createElement('div');
+      details.className = 'compatibility-result-details';
+
+      var tested = document.createElement('p');
+      tested.className = 'compatibility-result-detail';
+      tested.innerHTML = '<span class="compatibility-result-detail-label">Tested on:</span> ' + escapeHTML(entry.item.version || 'Not specified');
+
+      var notes = document.createElement('p');
+      notes.className = 'compatibility-result-detail';
+      notes.innerHTML = '<span class="compatibility-result-detail-label">Notes:</span> ' + escapeHTML(entry.item.notes || 'No additional notes.');
+
+      details.appendChild(tested);
+      details.appendChild(notes);
+      card.appendChild(header);
+      card.appendChild(details);
+
+      function toggle() {
+        var expanded = card.getAttribute('aria-expanded') === 'true';
+
+        // Keep the catalog output to one expanded card at a time.
+        if (!expanded) {
+          list.querySelectorAll('.compatibility-result[aria-expanded="true"]').forEach(function (openCard) {
+            openCard.setAttribute('aria-expanded', 'false');
+          });
+        }
+
+        card.setAttribute('aria-expanded', String(!expanded));
+      }
+
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggle();
+        }
+      });
+
+      list.appendChild(card);
+    });
+
+    if (matches.length > 1) {
+      var heading = document.createElement('div');
+      heading.className = 'compatibility-results-heading';
+      heading.textContent = 'Compatible receivers:';
+      results.replaceChildren(heading, list);
+    } else {
+      results.replaceChildren(list);
+    }
+  }
+
+  input.addEventListener('input', function () {
+    render(input.value);
+  });
+
+  fetch(COMPATIBILITY_CSV, { cache: 'no-cache' })
+    .then(function (response) {
+      if (!response.ok) throw new Error('Could not load compatibility.csv');
+      return response.text();
+    })
+    .then(function (text) {
+      var rows = parseCSV(text);
+      if (!rows.length) return;
+
+      var headers = rows[0].map(function (header) {
+        return header.toLowerCase();
+      });
+      var brandIndex = headers.indexOf('brand');
+      var modelIndex = headers.indexOf('model');
+      var versionIndex = headers.indexOf('tested version');
+      var notesIndex = headers.indexOf('notes');
+
+      if (brandIndex === -1 || modelIndex === -1) {
+        throw new Error('compatibility.csv must contain brand and model columns');
+      }
+
+      models = rows.slice(1)
+        .map(function (row) {
+          return {
+            brand: (row[brandIndex] || '').trim(),
+            model: (row[modelIndex] || '').trim(),
+            version: versionIndex === -1 ? '' : (row[versionIndex] || '').trim(),
+            notes: notesIndex === -1 ? '' : (row[notesIndex] || '').trim()
+          };
+        })
+        .filter(function (item) {
+          return item.brand && item.model;
+        });
+
+      renderBrowseList();
+    })
+    .catch(function (error) {
+      console.error('AVR Link compatibility:', error);
+      results.innerHTML = '<div class="compatibility-empty"><span>Compatibility data could not be loaded. Please try again later.</span></div>';
+    });
+})();
+</script>
+<script id="ecosystem-image-sizing">
+(function () {
+  var cards = document.querySelectorAll('.ecosystem-card');
+  var secondary = document.querySelector('.ecosystem-secondary');
+
+  cards.forEach(function (card) {
+    var image = card.querySelector('.ecosystem-device-image');
+    if (!image) return;
+
+    function sizeToImage() {
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      card.style.aspectRatio = image.naturalWidth + ' / ' + image.naturalHeight;
+    }
+
+    if (image.complete) {
+      sizeToImage();
+    } else {
+      image.addEventListener('load', sizeToImage, { once: true });
+    }
+  });
+
+  function syncSecondaryFiller() {
+    if (!secondary) return;
+
+    var columns = Array.from(secondary.querySelectorAll('.ecosystem-card-column'));
+    columns.forEach(function (column) {
+      var filler = column.querySelector('.ecosystem-filler');
+      if (filler) filler.remove();
+    });
+
+    if (columns.length < 2) return;
+
+    var cardsInRow = columns.map(function (column) {
+      return column.querySelector('.ecosystem-card');
+    }).filter(Boolean);
+
+    if (cardsInRow.length < 2) return;
+
+    var maxHeight = Math.max.apply(null, cardsInRow.map(function (card) {
+      return card.getBoundingClientRect().height;
+    }));
+
+    cardsInRow.forEach(function (card, index) {
+      var difference = maxHeight - card.getBoundingClientRect().height;
+      if (difference < 1) return;
+
+      var filler = document.createElement('div');
+      filler.className = 'ecosystem-filler';
+      filler.style.height = difference + 'px';
+      columns[index].appendChild(filler);
+    });
+  }
+
+  function update() {
+    requestAnimationFrame(syncSecondaryFiller);
+  }
+
+  window.addEventListener('load', update);
+  window.addEventListener('resize', update);
+  update();
+})();
+</script>
+
+<script>
+(function () {
+  var notice = document.getElementById('mobileDesktopNotice');
+  if (!notice) return;
+
+  var close = notice.querySelector('.mobile-desktop-notice-close');
+  close.addEventListener('click', function () {
+    notice.classList.add('is-dismissed');
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var targetX = 0;
+  var targetY = 0;
+  var currentX = 0;
+  var currentY = 0;
+  var raf = null;
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    notice.style.setProperty('--notice-x', currentX.toFixed(2) + 'px');
+    notice.style.setProperty('--notice-y', currentY.toFixed(2) + 'px');
+    raf = requestAnimationFrame(animate);
+  }
+
+  function move(event) {
+    var x = (event.clientX / window.innerWidth) - 0.5;
+    var y = (event.clientY / window.innerHeight) - 0.5;
+    targetX = x * 10;
+    targetY = y * 7;
+  }
+
+  window.addEventListener('pointermove', move, { passive: true });
+  raf = requestAnimationFrame(animate);
+
+  window.addEventListener('pagehide', function () {
+    if (raf) cancelAnimationFrame(raf);
+  });
+})();
+</script>
+
+
+
+
+
 </body>
 </html>

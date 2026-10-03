@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVR Link — A better remote for your AV receiver</title>
+<style>
+  :root {
+    --ink: #1b1f1d;
+    --paper: #f6f5f1;
+    --line: #d8d5cc;
+    --signal: #2f6f4f;
+    --signal-light: #e9f2ed;
+    --muted: #6b6f68;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.65;
+  }
+  a { color: inherit; }
+  img, video { display: block; max-width: 100%; }
+
+  .wrap { max-width: 850px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  nav {
+    max-width: 850px;
+    margin: 0 auto;
+    height: 77px;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .brand { font-weight: 700; letter-spacing: 0.02em; font-size: 18px; text-decoration: none; }
+  .brand span { color: var(--signal); }
+  .nav-links { display: flex; gap: 24px; font-size: 14px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-weight: 500; }
+  .nav-links a:hover { color: var(--ink); }
+
+  .hero { padding: 72px 0 64px; }
+  .kicker {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 44px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+    max-width: 700px;
+  }
+  .hero p { font-size: 18px; font-weight: 500; max-width: 650px; margin: 0; color: var(--ink); }
+  .button {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 9px 15px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--white);
+  }
+  .button.primary { background: var(--signal); color: var(--white); border-color: var(--signal); }
+
+  .section { padding: 44px 0; border-top: 1px solid var(--line); }
+  h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    margin: 0 0 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  p { margin: 0 0 16px; font-size: 15px; color: var(--muted); }
+
+  .receiver { display: grid; grid-template-columns: .8fr 1.2fr; gap: 5vw; align-items: start; }
+  .receiver .big { font-size: 18px; font-weight: 500; line-height: 1.6; color: var(--ink); margin: 0 0 12px; }
+  .receiver p { margin: 0 0 16px; }
+
+  .showcase-head { margin-bottom: 20px; }
+  .showcase-head p { font-size: 15px; margin: 0; }
+  .carousel { position: relative; }
+  .carousel-viewport {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--white);
+  }
+  .carousel-track { display: flex; transition: transform .35s ease; touch-action: pan-y; }
+  .slide { min-width: 100%; padding: 0 24px 20px; }
+  .slide-media {
+    width: 100%;
+    height: min(55vh, 520px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .slide-caption { display: flex; justify-content: space-between; gap: 1rem; padding: 16px 0 0; font-size: 15px; }
+  .slide-caption span { color: var(--muted); }
+  .carousel-control {
+    position: absolute;
+    top: calc(50% - 20px);
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .prev { left: 8px; }
+  .next { right: 8px; }
+  .carousel-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: var(--line); cursor: pointer; }
+  .dot.active { background: var(--signal); }
+  .counter { font-size: 13px; color: var(--muted); }
+
+  .features { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 20px; }
+  .features div {
+    flex: 1 1 150px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .features strong { display: block; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .features span { color: var(--muted); font-size: 15px; }
+
+  .closing { padding: 64px 0 96px; }
+  .closing h2 { margin-bottom: 16px; }
+  .closing p { font-size: 18px; color: var(--ink); }
+  .footer-note { font-size: 13px; color: var(--muted); margin-top: 24px; }
+
+  @media(max-width:700px) {
+    nav { height: 65px; padding: 16px 24px; }
+    .nav-links { gap: 16px; }
+    .nav-links a:first-child { display: none; }
+    .hero { padding: 52px 0 48px; }
+    .hero h1 { font-size: 36px; }
+    .receiver { grid-template-columns: 1fr; gap: 8px; }
+    .slide { padding: 0 12px 12px; }
+    .slide-media { height: 54vh; max-height: 440px; }
+    .slide-caption { display: block; }
+    .slide-caption span { display: block; margin-top: 4px; }
+    .carousel-control { top: auto; bottom: 58px; width: 36px; height: 36px; }
+    .prev { left: 18px; }
+    .next { right: 18px; }
+  }
+  @media(prefers-reduced-motion:reduce) {
+    html { scroll-behavior: auto; }
+    .carousel-track { transition: none; }
+  }
+</style>
+</head>
+<body>
+<nav><a class="brand" href="#top">AVR<span>·</span>Link</a><div class="nav-links"><a href="#receiver">AVR?</a><a href="#showcase">Showcase</a><a href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">GitHub</a></div></nav>
+<main id="top">
+<section class="hero"><div class="wrap"><div class="kicker">AVR Link</div><h1>Your AV receiver, without the remote.</h1><p>A native control app for compatible Denon and Marantz receivers, built for iPhone, iPad, Mac, and Apple Watch.</p><a class="button primary" href="#showcase">See the app</a></div></section>
+
+<section class="section" id="receiver"><div class="wrap receiver"><div><div class="kicker">Quick explanation</div><h2>What’s an AV receiver?</h2></div><div><p class="big">Think of it as the switchboard for your home theater.</p><p>Your TV, game console, streamer, and speakers all connect through it. The receiver routes the audio and video and handles the controls in between.</p></div></div></section>
+
+<section class="section" id="showcase"><div class="wrap"><div class="showcase-head"><div><div class="kicker">AVR Link</div><h2>Made for the devices you already use.</h2></div><p>Swipe through the app.</p></div><div class="carousel" aria-label="AVR Link product showcase"><button class="carousel-control prev" type="button" aria-label="Previous slide">‹</button><div class="carousel-viewport"><div class="carousel-track">
+<article class="slide"><div class="slide-media"><img src="assets/cross-platform.jpg" alt="AVR Link across iPhone, iPad, and Apple Watch"></div><div class="slide-caption"><strong>Across your devices</strong><span>iPhone · iPad · Apple Watch</span></div></article>
+<article class="slide"><div class="slide-media"><img src="assets/lightningfast.jpg" alt="AVR Link on iPhone, iPad, and Mac"></div><div class="slide-caption"><strong>One app, everywhere</strong><span>Mac · iPad · iPhone</span></div></article>
+<article class="slide"><div class="slide-media"><img src="assets/remote.jpg" alt="AVR Link remote controls on iPhone"></div><div class="slide-caption"><strong>Everyday controls</strong><span>Volume · playback · zones</span></div></article>
+<article class="slide"><div class="slide-media"><img src="assets/connect.jpg" alt="AVR Link receiver connection screen"></div><div class="slide-caption"><strong>Connect your receiver</strong><span>Network or IP address</span></div></article>
+<article class="slide"><div class="slide-media"><img src="assets/features.jpg" alt="AVR Link settings and feature screens"></div><div class="slide-caption"><strong>Built for Apple</strong><span>Shortcuts · Live Activities · Watch</span></div></article>
+<article class="slide"><div class="slide-media"><img src="assets/marantzapp.jpg" alt="Legacy Marantz AV8801 remote app interface"></div><div class="slide-caption"><strong>It started here</strong><span>Marantz AV8801</span></div></article>
+</div></div><button class="carousel-control next" type="button" aria-label="Next slide">›</button><div class="carousel-meta"><div class="dots" role="tablist" aria-label="Choose showcase image"></div><div class="counter" aria-live="polite">1 / 6</div></div></div></div></section>
+
+<section class="section"><div class="wrap"><div class="kicker">What it does</div><h2>Simple controls. Close at hand.</h2><div class="features"><div><strong>Power & volume</strong><span>Quick access to the basics.</span></div><div><strong>Sources & zones</strong><span>Switch inputs and manage zones.</span></div><div><strong>Playback</strong><span>Keep media controls nearby.</span></div></div></div></section>
+
+
+<section class="closing"><div class="wrap"><div class="kicker">AVR Link</div><h2>Less receiver. More app.</h2><p>That’s the idea.</p><a class="button primary" href="https://github.com/rawporkchop/AVR-Link" target="_blank" rel="noopener">View the project</a><div class="footer-note">Compatible hardware and features vary by receiver model.</div></div></section>
+</main>
+<script>
+(function(){const root=document.querySelector('.carousel');if(!root)return;const track=root.querySelector('.carousel-track'),slides=[...root.querySelectorAll('.slide')],dots=root.querySelector('.dots'),counter=root.querySelector('.counter');let index=0,startX=0;slides.forEach((_,i)=>{const b=document.createElement('button');b.className='dot'+(!i?' active':'');b.type='button';b.setAttribute('aria-label','Show slide '+(i+1));b.addEventListener('click',()=>go(i));dots.appendChild(b)});const dotEls=[...dots.children];function go(i){index=(i+slides.length)%slides.length;track.style.transform='translateX(-'+index*100+'%)';dotEls.forEach((d,n)=>d.classList.toggle('active',n===index));counter.textContent=index+1+' / '+slides.length}root.querySelector('.prev').onclick=()=>go(index-1);root.querySelector('.next').onclick=()=>go(index+1);track.addEventListener('touchstart',e=>startX=e.touches[0].clientX,{passive:true});track.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>45)go(index+(dx<0?1:-1))},{passive:true})})();
+</script>
+</body>
+</html>

@@ -1,14 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Privacy Policy — AVR Link</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="refresh" content="0; url=privacy" />
-  <link rel="canonical" href="privacy" />
-  <script>location.replace('privacy' + location.search + location.hash);</script>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — AVR Link</title>
+<style>
+  :root {
+    --ink: #1b1f1d;
+    --paper: #f6f5f1;
+    --line: #d8d5cc;
+    --signal: #2f6f4f;
+    --signal-light: #e9f2ed;
+    --muted: #6b6f68;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+  }
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 48px;
+  }
+  .mark {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-size: 18px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .mark span { color: var(--signal); }
+  nav a {
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    margin-left: 24px;
+    font-weight: 500;
+  }
+  nav a:hover, nav a.active { color: var(--ink); }
+  
+  h1 { font-size: 36px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .updated { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+  
+  .lede {
+    font-size: 18px;
+    font-weight: 500;
+    border-left: 3px solid var(--signal);
+    padding-left: 20px;
+    margin: 0 0 44px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    margin: 44px 0 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  p { margin: 0 0 16px; font-size: 15px; color: var(--muted); }
+  ul { margin: 0 0 16px; padding-left: 20px; }
+  li { margin-bottom: 8px; font-size: 15px; color: var(--muted); }
+  
+  .card-block {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .card-block h3 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+  .card-block p:last-child { margin-bottom: 0; }
+  .card-block a { color: var(--signal); text-decoration: none; font-weight: 500; }
+  .card-block a:hover { text-decoration: underline; }
+
+  footer {
+    margin-top: 96px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+  }
+</style>
 </head>
 <body>
-  <p>Redirecting to <a href="privacy">Privacy Policy</a>…</p>
+  <div class="wrap">
+    <header class="top">
+      <a class="mark" href="index.html">AVR<span>·</span>Link</a>
+      <nav>
+        <a href="index.html">Overview</a>
+        <a href="support.html">Support</a>
+        <a href="privacy.html" class="active">Privacy</a>
+      </nav>
+    </header>
+
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: July 7, 2026</div>
+
+    <p class="lede">AVR Link does not collect, transmit, or share any personal data. The app talks only to your own AV receiver on your local network, and to your own paired devices — nothing goes further than that.</p>
+
+    <div class="card-block">
+      <h3>What we collect</h3>
+      <p>Nothing. AVR Link has no server, no account system, and no analytics. We — the developer — never receive any information about you, your receiver, or how you use the app.</p>
+    </div>
+
+    <div class="card-block">
+      <h3>What the app connects to</h3>
+      <p>AVR Link's whole purpose is talking to hardware you own, over a network you control. Specifically:</p>
+      <ul>
+        <li><strong>Your AV receiver</strong> — the macOS, iOS, and watchOS apps discover and control your receiver directly over your local network. This traffic stays on your LAN and never reaches us.</li>
+        <li><strong>Your other Apple devices</strong> — the Apple Watch app relays commands through your paired iPhone using Apple's WatchConnectivity framework, and the iPhone ecosystem shares status through a private App Group container. Both are completely local mechanisms.</li>
+      </ul>
+    </div>
+
+    <div class="card-block">
+      <h3>Local storage</h3>
+      <p>The app caches certain data — such as known receivers, per-zone volume limits, and display preferences — directly on your device(s). This data never leaves your network and is completely cleared if you remove the application.</p>
+    </div>
+
+    <div class="card-block">
+      <h3>Contact</h3>
+      <p>Questions about this policy or how the app works? Reach out at
+        <a href="mailto:avr.linked@gmail.com">avr.linked@gmail.com</a>
+        or open an issue on
+        <a href="https://github.com/rawporkchop/AVR-Link/issues" target="_blank" rel="noopener">GitHub</a>.
+      </p>
+    </div>
+
+    <footer>AVR Link — menu-bar app for macOS, with iOS and watchOS companions</footer>
+  </div>
 </body>
 </html>
