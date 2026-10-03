@@ -114,7 +114,7 @@
 
   /* AV receiver explainer */
   .receiver-explainer {
-    padding: 5.5rem 4vw;
+    padding: 8.5rem 4vw;
     border-top: 1px solid var(--hairline);
     border-bottom: 1px solid var(--hairline);
   }
@@ -145,7 +145,7 @@
   .receiver-explainer-copy p:last-child { margin-bottom: 0; }
   .receiver-explainer-copy strong { color: var(--text-primary); }
   @media (max-width: 700px) {
-    .receiver-explainer { padding: 4rem 5vw; }
+    .receiver-explainer { padding: 6.5rem 5vw; }
     .receiver-explainer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
     .receiver-explainer h2 { max-width: none; }
   }
@@ -1684,6 +1684,21 @@
   @media (max-width: 640px) {
     .cta-group .btn-primary[href="#simulator"] { display: none; }
   }
+
+
+  /* Section-by-section navigation: sections remain normally scrollable inside,
+     but crossing a section boundary requires a small deliberate scroll. */
+  html.section-scroll-mode {
+    scroll-behavior: smooth;
+  }
+
+  html.section-scroll-mode body {
+    overscroll-behavior-y: none;
+  }
+
+  html.section-scroll-mode main > section {
+    scroll-margin-top: 0;
+  }
 </style>
 
 </head>
@@ -2103,14 +2118,28 @@
   var MID_APPROACH_HOLD_END = 0.80;
   var MID_APPROACH_OUT_END = 0.94;
 
+  // Keep this animation tied to the page length that existed when the page
+  // loaded, rather than recalculating it from the live document height on
+  // every frame. Expanding something later in the page (such as the model
+  // catalog) can increase scrollHeight; using that new height would make the
+  // same scroll position suddenly represent a different percentage and
+  // cause the icon to jump larger. A viewport resize is a genuine layout
+  // change, so the baseline is refreshed then.
+  var midApproachMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+
+  function refreshMidApproachScrollRange() {
+    midApproachMaxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  window.addEventListener('resize', refreshMidApproachScrollRange);
+
   function smoothStep(t) {
     t = Math.max(0, Math.min(1, t));
     return t * t * (3 - 2 * t);
   }
 
   function midApproachAmount() {
-    var maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    var progress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+    var progress = Math.max(0, Math.min(1, window.scrollY / midApproachMaxScroll));
 
     if (progress < MID_APPROACH_IN_START) return 0;
     if (progress < MID_APPROACH_IN_END) {
@@ -2767,6 +2796,151 @@ var targetSwayX = Math.max(
   window.addEventListener('pagehide', function () {
     if (raf) cancelAnimationFrame(raf);
   });
+})();
+</script>
+
+
+
+<script id="section-scroll-navigation">
+(function () {
+  // Normal scrolling is preserved while you are inside a section. Once the
+  // scroll reaches that section's boundary, a little more scroll is required
+  // before we advance to the next/previous section.
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main > section'));
+  if (sections.length < 2) return;
+
+  document.documentElement.classList.add('section-scroll-mode');
+
+  var TRIGGER_DISTANCE = 260; // px of wheel/touch movement required at a boundary
+  var BOUNDARY_TOLERANCE = 14;
+  var accumulated = 0;
+  var jumping = false;
+  var jumpTimer = null;
+  var touchStartY = null;
+  var touchAccumulated = 0;
+
+  function pageTop(el) {
+    return Math.max(0, el.getBoundingClientRect().top + window.scrollY);
+  }
+
+  function pageBottom(el) {
+    return Math.min(
+      document.documentElement.scrollHeight - window.innerHeight,
+      pageTop(el) + el.getBoundingClientRect().height - window.innerHeight
+    );
+  }
+
+  function currentSectionIndex() {
+    var y = window.scrollY;
+    var best = 0;
+    var bestDistance = Infinity;
+
+    sections.forEach(function (section, index) {
+      var top = pageTop(section);
+      var bottom = pageBottom(section);
+      var distance = y < top ? top - y : (y > bottom ? y - bottom : 0);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = index;
+      }
+    });
+
+    return best;
+  }
+
+  function atTopOf(index) {
+    return window.scrollY <= pageTop(sections[index]) + BOUNDARY_TOLERANCE;
+  }
+
+  function atBottomOf(index) {
+    return window.scrollY >= pageBottom(sections[index]) - BOUNDARY_TOLERANCE;
+  }
+
+  function jumpTo(index) {
+    if (index < 0 || index >= sections.length || jumping) return;
+    jumping = true;
+    accumulated = 0;
+    touchAccumulated = 0;
+
+    window.scrollTo({
+      top: pageTop(sections[index]),
+      behavior: 'smooth'
+    });
+
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(function () {
+      jumping = false;
+    }, 750);
+  }
+
+  function handleBoundaryDelta(delta) {
+    if (jumping || !delta) return false;
+
+    var index = currentSectionIndex();
+    var direction = delta > 0 ? 1 : -1;
+    var isAtBoundary = direction > 0 ? atBottomOf(index) : atTopOf(index);
+
+    if (!isAtBoundary) {
+      accumulated = 0;
+      return false;
+    }
+
+    accumulated += Math.abs(delta);
+
+    if (accumulated >= TRIGGER_DISTANCE) {
+      jumpTo(index + direction);
+    }
+
+    // Lock the page at the boundary while the user builds up the small
+    // additional scroll needed to trigger the section change.
+    return true;
+  }
+
+  window.addEventListener('wheel', function (event) {
+    // Let pinch-zoom and horizontal gestures behave normally.
+    if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+    if (handleBoundaryDelta(event.deltaY)) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  // Touch scrolling gets the same boundary behavior without interfering with
+  // ordinary free scrolling inside a section.
+  window.addEventListener('touchstart', function (event) {
+    if (event.touches.length !== 1) return;
+    touchStartY = event.touches[0].clientY;
+    touchAccumulated = 0;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function (event) {
+    if (touchStartY === null || event.touches.length !== 1) return;
+
+    var currentY = event.touches[0].clientY;
+    var delta = touchStartY - currentY;
+    if (!delta) return;
+
+    // Only take over when the gesture is trying to leave the section.
+    if (handleBoundaryDelta(delta)) {
+      event.preventDefault();
+      touchAccumulated += Math.abs(delta);
+    }
+
+    touchStartY = currentY;
+  }, { passive: false });
+
+  window.addEventListener('touchend', function () {
+    touchStartY = null;
+    touchAccumulated = 0;
+  }, { passive: true });
+
+  // If something else on the page scrolls us across a boundary, clear the
+  // partial trigger so the next deliberate gesture starts fresh.
+  window.addEventListener('scroll', function () {
+    if (!jumping) return;
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(function () { jumping = false; }, 120);
+  }, { passive: true });
 })();
 </script>
 
