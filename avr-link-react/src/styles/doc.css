@@ -1,0 +1,51 @@
+/* Light-themed "document" pages: Support + Privacy.
+   Everything is scoped under .doc-page so it can't leak into the dark home page. */
+body.theme-light {
+  margin: 0;
+  background: #f6f5f1;
+  color: #1b1f1d;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.65;
+}
+.doc-page {
+  --ink: #1b1f1d; --paper: #f6f5f1; --line: #d8d5cc; --signal: #2f6f4f;
+  --signal-light: #e9f2ed; --muted: #6b6f68; --white: #ffffff;
+}
+.doc-page, .doc-page * { box-sizing: border-box; }
+.doc-page .wrap { max-width: 850px; margin: 0 auto; padding: 40px 24px 96px; }
+.doc-page header.top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 48px; }
+.doc-page .mark { font-weight: 700; letter-spacing: 0.02em; font-size: 18px; color: var(--ink); text-decoration: none; }
+.doc-page .mark span { color: var(--signal); }
+.doc-page nav a { font-size: 14px; color: var(--muted); text-decoration: none; margin-left: 24px; font-weight: 500; }
+.doc-page nav a:hover, .doc-page nav a.active { color: var(--ink); }
+.doc-page h1 { font-size: 36px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+.doc-page .subtitle { font-size: 16px; color: var(--muted); margin-bottom: 48px; }
+.doc-page .updated { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+.doc-page .lede { font-size: 18px; font-weight: 500; border-left: 3px solid var(--signal); padding-left: 20px; margin: 0 0 44px; color: var(--ink); line-height: 1.6; }
+.doc-page h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--signal); margin: 48px 0 24px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.doc-page p { margin: 0 0 16px; font-size: 15px; color: var(--muted); }
+.doc-page ul { margin: 0 0 16px; padding-left: 20px; }
+.doc-page li { margin-bottom: 8px; font-size: 15px; color: var(--muted); }
+
+/* Support */
+.doc-page .faq-grid { display: flex; flex-direction: column; gap: 16px; }
+.doc-page .faq-card { background: var(--white); border: 1px solid var(--line); border-radius: 4px; padding: 24px; }
+.doc-page .q { font-weight: 700; font-size: 16px; margin: 0 0 8px; color: var(--ink); }
+.doc-page .a { font-size: 14px; margin: 0; color: var(--muted); line-height: 1.6; }
+.doc-page .a a { color: var(--signal); text-decoration: none; font-weight: 500; }
+.doc-page .a a:hover { text-decoration: underline; }
+.doc-page .contact-box { background: var(--white); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.doc-page .contact-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; font-size: 14px; }
+.doc-page .contact-row + .contact-row { border-top: 1px solid var(--line); }
+.doc-page .contact-label { color: var(--ink); font-weight: 600; }
+.doc-page .contact-box a { color: var(--signal); text-decoration: none; font-weight: 500; }
+.doc-page .contact-box a:hover { text-decoration: underline; }
+
+/* Privacy */
+.doc-page .card-block { background: var(--white); border: 1px solid var(--line); border-radius: 4px; padding: 32px; margin-bottom: 24px; }
+.doc-page .card-block h3 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+.doc-page .card-block p:last-child { margin-bottom: 0; }
+.doc-page .card-block a { color: var(--signal); text-decoration: none; font-weight: 500; }
+.doc-page .card-block a:hover { text-decoration: underline; }
+
+.doc-page footer { margin-top: 96px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 24px; }
