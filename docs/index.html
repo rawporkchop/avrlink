@@ -111,6 +111,45 @@
     margin: 0 auto;
   }
 
+
+  /* AV receiver explainer */
+  .receiver-explainer {
+    padding: 5.5rem 4vw;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .receiver-explainer-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+    gap: clamp(2rem, 7vw, 7rem);
+    align-items: start;
+  }
+  .receiver-explainer h2 {
+    margin: .65rem 0 0;
+    max-width: 11ch;
+    font: 700 clamp(2rem, 4vw, 3.4rem)/1.05 var(--font-display);
+    letter-spacing: -.035em;
+  }
+  .receiver-explainer-copy {
+    max-width: 62ch;
+    padding-top: .35rem;
+  }
+  .receiver-explainer-copy p {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .receiver-explainer-copy p:last-child { margin-bottom: 0; }
+  .receiver-explainer-copy strong { color: var(--text-primary); }
+  @media (max-width: 700px) {
+    .receiver-explainer { padding: 4rem 5vw; }
+    .receiver-explainer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .receiver-explainer h2 { max-width: none; }
+  }
+
   /* Hero */
   .hero-container {
     position: relative;
@@ -1711,6 +1750,21 @@
   
 
 
+
+
+  <section class="receiver-explainer" aria-labelledby="receiver-explainer-title">
+    <div class="receiver-explainer-inner">
+      <div>
+        <span class="eyebrow">The hardware</span>
+        <h2 id="receiver-explainer-title">So, what is an AV receiver?</h2>
+      </div>
+      <div class="receiver-explainer-copy">
+        <p><strong>Think of it as the switchboard for your home theater.</strong></p>
+        <p>Your TV, game console, streamer, and speakers all connect through it. The receiver routes the audio and video, selects what you want to watch or listen to, and handles controls like volume along the way.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="feature-showcase-section" id="showcase">
     <div class="feature-text-content">
       <h2 class="feature-title">Volume control, down to one gesture.</h2>
@@ -2028,12 +2082,46 @@
   // never runs this script) sees by default. ----
   var TUNING = {
     desktop: { maxSwayX: 1000, maxScrollY: 1000, idleBob: 2.5, idleSway: 0.8,
-               companionOffsetX: 260, companionDipY: 34, companionScale: 1.18, companionOpacity: 0.55, restOpacity: 0.16 },
+               companionOffsetX: 260, companionDipY: 34, companionScale: 1.18, companionOpacity: 0.55, restOpacity: 0.16,
+               midApproachScale: 1.55, midApproachOpacity: 0.42 },
     tablet:  { maxSwayX: 16, maxScrollY: 114, idleBob: 2.0, idleSway: 0.6,
-               companionOffsetX: 130, companionDipY: 24, companionScale: 1.12, companionOpacity: 0.45, restOpacity: 0.16 },
+               companionOffsetX: 130, companionDipY: 24, companionScale: 1.12, companionOpacity: 0.45, restOpacity: 0.16,
+               midApproachScale: 1.32, midApproachOpacity: 0.36 },
     phone:   { maxSwayX: 10, maxScrollY: 72,  idleBob: 1.5, idleSway: 0.4,
-               companionOffsetX: 60,  companionDipY: 16, companionScale: 1.08, companionOpacity: 0.35, restOpacity: 0.16 }
+               companionOffsetX: 60,  companionDipY: 16, companionScale: 1.08, companionOpacity: 0.35, restOpacity: 0.16,
+               midApproachScale: 1.18, midApproachOpacity: 0.30 }
   };
+
+  // A small, one-time "approach" around the middle of the page. It is
+  // based on total document scroll progress rather than a fixed pixel
+  // position, so it happens roughly halfway through the whole page on
+  // different screen sizes and content lengths.
+  // Mid-page approach: the icon comes forward gradually around 40–50%,
+  // stays close and large through 80%, then retreats gradually.
+  var MID_APPROACH_IN_START = 0.38;
+  var MID_APPROACH_IN_END = 0.50;
+  var MID_APPROACH_HOLD_END = 0.80;
+  var MID_APPROACH_OUT_END = 0.94;
+
+  function smoothStep(t) {
+    t = Math.max(0, Math.min(1, t));
+    return t * t * (3 - 2 * t);
+  }
+
+  function midApproachAmount() {
+    var maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    var progress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+
+    if (progress < MID_APPROACH_IN_START) return 0;
+    if (progress < MID_APPROACH_IN_END) {
+      return smoothStep((progress - MID_APPROACH_IN_START) / (MID_APPROACH_IN_END - MID_APPROACH_IN_START));
+    }
+    if (progress <= MID_APPROACH_HOLD_END) return 1;
+    if (progress < MID_APPROACH_OUT_END) {
+      return 1 - smoothStep((progress - MID_APPROACH_HOLD_END) / (MID_APPROACH_OUT_END - MID_APPROACH_HOLD_END));
+    }
+    return 0;
+  }
 
   // Companion → background transition completes within this fraction of
   // the viewport height (recomputed live, so resizing/rotating the device
@@ -2240,6 +2328,15 @@ var targetSwayX = Math.max(
     var companionDip = tuning.companionDipY * r;
     var companionScaleAmt = 1 + (tuning.companionScale - 1) * r;
     var frameOpacity = tuning.restOpacity + (tuning.companionOpacity - tuning.restOpacity) * opacityRemaining;
+
+    // 6c. Mid-page approach: once the hero has settled into the background,
+    // let the icon quietly come forward again around the midpoint of the
+    // total page scroll. The pulse is intentionally small — mostly a little
+    // more scale and presence — then disappears so the icon returns to its
+    // normal background state.
+    var midApproach = midApproachAmount();
+    companionScaleAmt *= 1 + (tuning.midApproachScale - 1) * midApproach;
+    frameOpacity += (tuning.midApproachOpacity - tuning.restOpacity) * midApproach;
 
     var finalX = posX + idleSway + companionX;
     // finalY sums THREE independent things: posY (the velocity-driven
